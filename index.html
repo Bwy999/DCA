@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F4F1">
+<meta name="description" content="比特币定投账本：记录人民币经 C2C 兑换 USDT、再买入 BTC 的全链路成本。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="定投账本">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>定投账本 · ¥ → ₮ → ₿</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  /* 亮色 · 默认 */
+  --bg:#F5F4F1; --panel:#FFFFFF; --panel2:#F2F0EC; --line:#DDD9D2; --line-soft:#EAE7E1;
+  --text:#15171A; --dim:#666C74; --faint:#9AA0A7;
+  --cny:#B23A2C; --usdt:#0E7C58; --btc:#C86A00;
+  --red:#D0322F; --green:#0E8A55; --up:#D0322F; --down:#0E8A55;
+  --header:rgba(245,244,241,.9); --overlay:rgba(32,30,27,.4); --onbtc:#FFFFFF;
+  --shadow:0 1px 2px rgba(20,22,26,.05),0 1px 1px rgba(20,22,26,.03);
+  --sheet-shadow:0 20px 56px rgba(20,22,26,.18);
+  --mono:"Menlo","SF Mono","JetBrains Mono",ui-monospace,"Courier New",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --r:10px;
+}
+html[data-theme="dark"]{
+  --bg:#0A0B0D; --panel:#101216; --panel2:#15181D; --line:#23272E; --line-soft:#1A1D22;
+  --text:#E9E7E2; --dim:#7A8089; --faint:#464C55;
+  --cny:#C8483C; --usdt:#26A17B; --btc:#F7931A;
+  --red:#E5484D; --green:#2FB37B; --up:#E5484D; --down:#2FB37B;
+  --header:rgba(10,11,13,.86); --overlay:rgba(5,6,7,.72); --onbtc:#140C02;
+  --shadow:none; --sheet-shadow:0 20px 56px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
+}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--btc);outline-offset:2px;border-radius:5px}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--shadow)}
+.spacer{flex:1}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--dim)}
+
+/* ── 顶栏 ── */
+header{position:sticky;top:0;z-index:40;background:var(--header);backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
+header.scrolled{border-bottom-color:var(--line-soft)}
+.hbar{display:flex;align-items:center;gap:6px;height:54px;padding-top:env(safe-area-inset-top)}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:.08em;font-weight:600;white-space:nowrap}
+.brand b{color:var(--btc);font-weight:600}
+.mini-px{display:flex;align-items:baseline;gap:6px;margin-left:12px;opacity:0;transform:translateY(-4px);transition:.22s;pointer-events:none;font-family:var(--mono);font-size:12px}
+header.scrolled .mini-px{opacity:1;transform:none}
+.mini-px b{color:var(--btc);font-weight:600;font-variant-numeric:tabular-nums}
+.mini-px i{font-style:normal;font-size:10.5px}
+.iconbtn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--dim);font-family:var(--mono);font-size:14px;flex:none}
+.iconbtn:hover{background:var(--panel2);color:var(--text)}
+.iconbtn svg{display:block}
+html[data-theme="dark"] #icoMoon,html:not([data-theme="dark"]) #icoSun{display:none}
+
+/* ── 兑换链路 ── */
+.hero{padding:26px 0 6px}
+.chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center}
+.node .cur{font-family:var(--mono);font-size:11px;letter-spacing:.16em;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.node .cur i{width:6px;height:6px;border-radius:50%;font-style:normal;flex:none}
+.node .amt{font-family:var(--mono);font-size:clamp(21px,5.2vw,30px);font-weight:600;letter-spacing:-0.03em;line-height:1;word-break:break-all}
+.node .sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:7px}
+.n-cny .cur{color:var(--cny)} .n-cny .cur i{background:var(--cny)}
+.n-usdt .cur{color:var(--usdt)} .n-usdt .cur i{background:var(--usdt)}
+.n-btc .cur{color:var(--btc)} .n-btc .cur i{background:var(--btc)}
+.link{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 12px;min-width:98px}
+.link .rate{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+.link .bar{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--line) 22%,var(--line) 78%,transparent);position:relative}
+.link .bar::after{content:"";position:absolute;right:0;top:-2.5px;border-left:5px solid var(--line);border-top:3px solid transparent;border-bottom:3px solid transparent}
+.link .rl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--faint)}
+
+/* ── 行情条 ── */
+.pricebar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:15px 16px 14px;margin-top:22px;cursor:pointer;position:relative;overflow:hidden}
+.pricebar::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--btc)}
+.pb-l .lbl{margin-bottom:9px}
+.pb-l .big{font-family:var(--mono);font-size:clamp(30px,8vw,42px);font-weight:600;color:var(--btc);letter-spacing:-0.035em;line-height:1;font-variant-numeric:tabular-nums}
+.pb-l .cnyeq{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:8px}
+.pb-r{display:flex;flex-direction:column;align-items:flex-end;gap:8px;text-align:right}
+.pb-r .vs{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.pb-r .vs small{display:block;font-size:9px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;margin-bottom:4px}
+.pb-r .status{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+.pb-r .rf{padding:3px 8px;border:1px solid var(--line);border-radius:99px}
+.pricebar:hover .rf{color:var(--text);border-color:var(--faint)}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--usdt);box-shadow:0 0 7px var(--usdt);flex:none}
+.dot.stale{background:var(--faint);box-shadow:none}
+.dot.load{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ── 汇总 ── */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden;margin-top:8px;box-shadow:var(--shadow)}
+.cell{background:var(--panel);padding:13px 14px}
+.cell .v{font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:-0.02em;margin-top:5px}
+
+/* ── 工具条 ── */
+.toolbar{display:flex;align-items:center;gap:8px;margin:20px 0 10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.05em;padding:5px 10px;border-radius:7px;color:var(--dim);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:7px 13px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--dim);white-space:nowrap}
+.btn:hover{color:var(--text);border-color:var(--faint)}
+.btn.primary{background:var(--btc);color:var(--onbtc);border-color:var(--btc);font-weight:700}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--red);border-color:transparent}
+.btn.danger:hover{border-color:var(--red)}
+.cadence{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em}
+.cadence b{color:var(--dim);font-weight:400}
+.cadence.due b{color:var(--btc)}
+
+/* ── 图表 ── */
+.chartbox{padding:14px 14px 10px;margin-bottom:8px}
+.chartwrap{position:relative;height:210px;touch-action:pan-y}
+canvas{display:block;width:100%;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line-soft)}
+.lg{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.lg s{width:14px;height:2px;border-radius:2px;text-decoration:none;flex:none}
+.note{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:8px;line-height:1.65}
+
+/* ── 表单 ── */
+.form{padding:16px;margin-bottom:8px;display:none}
+.form.open{display:block}
+.form h3{margin:0 0 14px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);font-weight:500;text-transform:uppercase}
+.fchain{display:grid;gap:14px}
+.f{display:flex;flex-direction:column;gap:6px}
+.f label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.f label em{font-style:normal;color:var(--faint);letter-spacing:0;text-transform:none;font-size:10px}
+.f input{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 11px;font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;width:100%}
+.f input:focus{border-color:var(--faint);outline:none}
+.f input::placeholder{color:var(--faint)}
+.f.derived input{color:var(--dim)}
+.f.derived.touched input{color:var(--text)}
+.grp{border-left:2px solid var(--line);padding-left:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.grp.g-cny{border-color:var(--cny)}
+.grp.g-btc{border-color:var(--btc)}
+.grp .gt{grid-column:1/-1;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.factions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;align-items:center}
+.hint{font-family:var(--mono);font-size:10px;color:var(--faint);margin-right:auto}
+
+/* ── 流水 ── */
+.ledger{overflow:hidden;margin-bottom:22px}
+.lhead{display:grid;grid-template-columns:70px 1fr 1fr 1fr 1fr 1.15fr 66px;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line-soft)}
+.lhead span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+.lhead span:not(:first-child){text-align:right}
+.yr{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:11px 14px;background:var(--panel2);border-bottom:1px solid var(--line-soft);text-align:left}
+.yr .y{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;display:flex;align-items:center;gap:7px}
+.yr .y .cv{color:var(--faint);font-size:9px;transition:transform .18s;display:inline-block}
+.yr[aria-expanded="false"] .cv{transform:rotate(-90deg)}
+.yr .s{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right}
+.row{display:grid;grid-template-columns:70px 1fr 1fr 1fr 1fr 1.15fr 66px;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line-soft);align-items:center;font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;cursor:pointer;width:100%;text-align:left}
+.row:hover{background:var(--panel2)}
+.row .d{color:var(--dim);font-size:11px;position:relative}
+.row:hover .d::after{content:"›";position:absolute;right:-2px;color:var(--faint)}
+.row .r{text-align:right}
+.c-cny{color:var(--cny)} .c-usdt{color:var(--usdt)} .c-btc{color:var(--btc)}
+.row .mini{display:none}
+.empty{padding:44px 20px;text-align:center}
+.empty p{color:var(--dim);font-size:13px;margin:0 0 6px}
+.empty .lbl{margin-bottom:12px}
+
+/* ── 弹层 ── */
+.modal{position:fixed;inset:0;z-index:60;background:var(--overlay);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:15px;width:100%;max-width:410px;padding:20px;max-height:86vh;overflow:auto;box-shadow:var(--sheet-shadow)}
+.sheet h3{margin:0 0 14px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;font-weight:500}
+.srow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.srow:last-of-type{border-bottom:none}
+.srow .k{font-size:13px}
+.srow .k small{display:block;color:var(--faint);font-size:11px;font-family:var(--mono);margin-top:2px;line-height:1.5}
+.srow input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-family:var(--mono);font-size:13px;width:112px;text-align:right}
+textarea{width:100%;height:170px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--text);font-family:var(--mono);font-size:11px;padding:10px;resize:vertical;line-height:1.5}
+footer{text-align:center;padding:4px 0 30px}
+footer span{font-family:var(--mono);font-size:10px;color:var(--faint);opacity:.75;letter-spacing:.1em}
+
+/* ── 提示 ── */
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:9px 10px 9px 18px;font-family:var(--mono);font-size:11.5px;opacity:0;pointer-events:none;transition:.22s;z-index:80;display:flex;align-items:center;gap:12px;box-shadow:var(--sheet-shadow);max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast button{font-family:var(--mono);font-size:11px;color:var(--btc);padding:4px 11px;border:1px solid var(--line);border-radius:99px;font-weight:600}
+.toast button:hover{border-color:var(--btc)}
+.toast .msg{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast.plain{padding-right:18px}
+
+@media(max-width:680px){
+  .chain{grid-template-columns:1fr}
+  .link{flex-direction:row;min-width:0;width:100%;padding:9px 0;gap:10px;justify-content:flex-start}
+  .link .bar{width:22px;flex:none}
+  .link .bar::after{display:none}
+  .node{padding:7px 0}
+  .strip{grid-template-columns:1fr 1fr}
+  .pb-r{flex-direction:row;align-items:center;justify-content:space-between;width:100%;text-align:left;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+  .pb-r .vs small{margin-bottom:2px}
+  .grp{grid-template-columns:1fr}
+  .lhead{display:none}
+  .row{grid-template-columns:1fr auto;gap:4px 10px;padding:13px 14px}
+  .row .d{text-align:left;grid-row:1;grid-column:1}
+  .row:hover .d::after{content:""}
+  .row .hide-m{display:none}
+  .row .mini{display:block;grid-column:1/-1;grid-row:2;font-size:11.5px;color:var(--dim);margin-top:4px;line-height:1.8}
+  .row .pnl{grid-row:1;grid-column:2;text-align:right}
+  .cadence{width:100%;order:9}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="wrap hbar">
+    <div class="brand">定投账本 <b>₿</b></div>
+    <div class="mini-px" id="miniPx"><b id="mPx">—</b><i id="mVs" class="flat">—</i></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="btnTheme" title="切换深浅主题" aria-label="切换深浅主题">
+      <svg id="icoMoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20.5 14.4A8.6 8.6 0 0 1 9.6 3.5 8.6 8.6 0 1 0 20.5 14.4Z"/></svg>
+      <svg id="icoSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.1M12 19.1v2.1M4.9 12H2.8M21.2 12h-2.1M6.9 6.9 5.4 5.4M18.6 18.6l-1.5-1.5M17.1 6.9l1.5-1.5M5.4 18.6l1.5-1.5"/></svg>
+    </button>
+    <button class="iconbtn" id="btnSettings" title="设置" aria-label="设置">⚙</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="chain">
+      <div class="node n-cny">
+        <div class="cur"><i></i>CNY 人民币</div>
+        <div class="amt" id="hCny">¥0</div>
+        <div class="sub" id="hCnySub">还没有投入</div>
+      </div>
+      <div class="link">
+        <div class="rl">C2C 均价</div><div class="bar"></div><div class="rate" id="hRate">—</div>
+      </div>
+      <div class="node n-usdt">
+        <div class="cur"><i></i>USDT 稳定币</div>
+        <div class="amt" id="hUsdt">₮0</div>
+        <div class="sub" id="hUsdtSub">经 C2C 兑入</div>
+      </div>
+      <div class="link">
+        <div class="rl">持仓均价</div><div class="bar"></div><div class="rate" id="hCost">—</div>
+      </div>
+      <div class="node n-btc">
+        <div class="cur"><i></i>BTC 比特币</div>
+        <div class="amt" id="hBtc">₿0</div>
+        <div class="sub" id="hBtcSub">现货买入</div>
+      </div>
+    </div>
+
+    <div class="pricebar card" id="tick" title="点击刷新行情">
+      <div class="pb-l">
+        <div class="lbl">BTC / USDT 现价</div>
+        <div class="big num" id="px">—</div>
+        <div class="cnyeq num" id="pxCny">点击刷新</div>
+      </div>
+      <div class="pb-r">
+        <div class="vs num flat" id="pxVs"><small>较持仓均价</small>—</div>
+        <div class="status"><span class="dot stale" id="dot"></span><span id="pxsrc">等待行情</span><span class="rf">刷新</span></div>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="cell"><div class="lbl">当前市值</div><div class="v num flat" id="sValue">—</div></div>
+      <div class="cell"><div class="lbl">浮动盈亏</div><div class="v num flat" id="sPnl">—</div></div>
+      <div class="cell"><div class="lbl">收益率</div><div class="v num flat" id="sRoi">—</div></div>
+      <div class="cell"><div class="lbl" id="lIrr">年化 IRR</div><div class="v num flat" id="sIrr">—</div></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="记账本位">
+      <button id="baseCny" aria-pressed="true">¥ 人民币本位</button>
+      <button id="baseUsdt" aria-pressed="false">₮ USDT 本位</button>
+    </div>
+    <div class="spacer"></div>
+    <span class="cadence" id="cadence"></span>
+    <button class="btn" id="btnData">数据</button>
+    <button class="btn primary" id="btnAdd">＋ 记一笔</button>
+  </div>
+
+  <form class="card form" id="form">
+    <h3 id="formTitle">记一笔定投</h3>
+    <div class="fchain">
+      <div class="grp g-cny">
+        <div class="gt">第一段 · C2C 买 USDT</div>
+        <div class="f"><label for="fDate">日期</label><input type="date" id="fDate" required></div>
+        <div class="f"><label for="fCny">人民币投入 <em>¥</em></label><input type="text" inputmode="decimal" id="fCny" placeholder="2000" required></div>
+        <div class="f"><label for="fRate">C2C 单价 <em>¥/USDT</em></label><input type="text" inputmode="decimal" id="fRate" placeholder="7.28" required></div>
+        <div class="f derived"><label for="fUsdt">实收 USDT <em>可改</em></label><input type="text" inputmode="decimal" id="fUsdt" placeholder="自动计算"></div>
+      </div>
+      <div class="grp g-btc">
+        <div class="gt">第二段 · USDT 买 BTC</div>
+        <div class="f"><label for="fPrice">BTC 成交价 <em>USDT</em></label><input type="text" inputmode="decimal" id="fPrice" placeholder="填市价" required></div>
+        <div class="f derived"><label for="fBtc">实收 BTC <em>扣完手续费</em></label><input type="text" inputmode="decimal" id="fBtc" placeholder="自动计算"></div>
+      </div>
+      <div class="f"><label for="fNote">备注 <em>选填</em></label><input type="text" id="fNote" placeholder="例如：工资定投 / 恐慌加仓"></div>
+    </div>
+    <div class="factions">
+      <button type="button" class="btn danger" id="fDelete" hidden>删除这笔</button>
+      <span class="hint" id="fHint"></span>
+      <button type="button" class="btn" id="fCancel">取消</button>
+      <button type="submit" class="btn primary">保存</button>
+    </div>
+  </form>
+
+  <section class="card chartbox">
+    <div class="toolbar" style="margin:0 0 10px">
+      <div class="seg" role="group" aria-label="图表视图">
+        <button id="tabStack" aria-pressed="true">累计 BTC</button>
+        <button id="tabCost" aria-pressed="false">成本 / 市值</button>
+        <button id="tabBuy" aria-pressed="false">买入分布</button>
+      </div>
+    </div>
+    <div class="chartwrap"><canvas id="cv"></canvas></div>
+    <div class="legend" id="legend"></div>
+    <div class="note" id="chartNote"></div>
+  </section>
+
+  <section class="card ledger">
+    <div class="lhead">
+      <span>日期</span><span>人民币</span><span>C2C 价</span><span>USDT</span><span>成交价</span><span>BTC</span><span>较现价</span>
+    </div>
+    <div id="rows"></div>
+  </section>
+</main>
+
+<footer><span>¥ → ₮ → ₿ · 数据只存在这台设备</span></footer>
+
+<div class="modal" id="mSettings">
+  <div class="sheet">
+    <h3>设置</h3>
+    <div class="srow">
+      <div class="k">当前汇率<small>USD/CNY，用于人民币本位估值</small></div>
+      <input type="text" inputmode="decimal" id="setFx">
+    </div>
+    <div class="srow">
+      <div class="k">BTC 价格<small id="setPxSrc">留空则自动获取</small></div>
+      <input type="text" inputmode="decimal" id="setPx" placeholder="自动">
+    </div>
+    <div class="srow">
+      <div class="k">涨跌配色<small>红涨绿跌 / 绿涨红跌</small></div>
+      <div class="seg"><button type="button" id="cnRed" aria-pressed="true">红涨</button><button type="button" id="cnGreen" aria-pressed="false">绿涨</button></div>
+    </div>
+    <div class="factions"><button class="btn primary" id="setClose">完成</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mData">
+  <div class="sheet">
+    <h3>数据备份</h3>
+    <textarea id="dataText" spellcheck="false" aria-label="账本 JSON"></textarea>
+    <div class="factions" style="justify-content:space-between">
+      <button class="btn" id="dCsv">导出 CSV</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="dClose">关闭</button>
+        <button class="btn primary" id="dImport">导入覆盖</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast plain" id="toast"><span class="msg" id="toastMsg"></span><button id="toastBtn" hidden></button></div>
+
+<script>
+"use strict";
+
+/* ═══════════ 存储 ═══════════
+   Claude 环境用 window.storage；GitHub Pages 等自托管场景回退 localStorage。 */
+const KEY = "btc-dca-ledger";
+const store = {
+  async load(){
+    try{
+      if (window.storage){ const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : null; }
+      const raw = window.localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  },
+  async save(o){
+    try{
+      const s = JSON.stringify(o);
+      if (window.storage){ await window.storage.set(KEY, s); return true; }
+      window.localStorage.setItem(KEY, s); return true;
+    }catch(e){ return false; }
+  }
+};
+
+/* ═══════════ 状态 ═══════════ */
+let state = { records: [], settings: { fx: 7.25, base: "CNY", manualPx: null, redUp: true, theme: "light" } };
+let price = { v: null, src: "—", live: false };
+let editingId = null, chartTab = "stack", collapsed = {}, hoverX = null;
+
+const $ = s => document.querySelector(s);
+const num = v => { const n = parseFloat(String(v).replace(/[,\s¥$₮₿]/g,"")); return isFinite(n) ? n : NaN; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const DAY = 864e5;
+
+/* ═══════════ 格式 ═══════════ */
+const fmt = (n,d=2) => !isFinite(n) ? "—" : n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtK = n => { if(!isFinite(n)) return "—"; const a=Math.abs(n);
+  if (a>=1e8) return (n/1e8).toFixed(2)+"亿";
+  if (a>=1e4) return (n/1e4).toFixed(a>=1e6?1:2)+"万";
+  return fmt(n, a<100?2:0); };
+const cny  = n => "¥"+fmtK(n);
+const usdt = n => "₮"+fmtK(n);
+const pct  = n => isFinite(n) ? (n>=0?"+":"")+(n*100).toFixed(2)+"%" : "—";
+const sats = n => Math.round(n*1e8).toLocaleString("en-US");
+
+/* ═══════════ 汇总 ═══════════ */
+function calc(){
+  const r = state.records.slice().sort((a,b)=> a.date<b.date ? -1 : 1);
+  const s = { n:r.length, cny:0, usdt:0, btc:0, list:r };
+  r.forEach(x=>{ s.cny+=x.cny; s.usdt+=x.usdt; s.btc+=x.btc; });
+  s.avgRate = s.usdt ? s.cny/s.usdt : NaN;
+  s.costU   = s.btc  ? s.usdt/s.btc : NaN;
+  s.costC   = s.btc  ? s.cny /s.btc : NaN;
+  s.px   = price.v;
+  s.valU = isFinite(s.px) ? s.btc*s.px : NaN;
+  s.valC = isFinite(s.valU) ? s.valU*state.settings.fx : NaN;
+  s.pnlU = s.valU - s.usdt;  s.pnlC = s.valC - s.cny;
+  s.roiU = s.usdt ? s.pnlU/s.usdt : NaN;
+  s.roiC = s.cny  ? s.pnlC/s.cny  : NaN;
+  s.irr  = irr(r, s);
+  return s;
+}
+function irr(r, s){
+  if (!r.length || !isFinite(s.valU)) return NaN;
+  const useCny = state.settings.base === "CNY";
+  const f = r.map(x=>({ t:new Date(x.date).getTime(), v:-(useCny?x.cny:x.usdt) }));
+  f.push({ t:Date.now(), v: useCny ? s.valC : s.valU });
+  const t0=f[0].t, Y=365.25*DAY;
+  const npv = k => f.reduce((a,x)=> a + x.v/Math.pow(1+k,(x.t-t0)/Y), 0);
+  let lo=-0.9999, hi=20;
+  if (npv(lo)*npv(hi) > 0) return NaN;
+  for (let i=0;i<160;i++){ const m=(lo+hi)/2; if (npv(m)>0) lo=m; else hi=m; }
+  const o=(lo+hi)/2; return Math.abs(o)>19 ? NaN : o;
+}
+
+/* ═══════════ 渲染 ═══════════ */
+function render(){
+  const s = calc(), isCny = state.settings.base === "CNY";
+  const cs = getComputedStyle(document.documentElement);
+  const RED = cs.getPropertyValue("--red").trim(), GREEN = cs.getPropertyValue("--green").trim();
+  document.documentElement.style.setProperty("--up",   state.settings.redUp ? RED : GREEN);
+  document.documentElement.style.setProperty("--down", state.settings.redUp ? GREEN : RED);
+
+  $("#hCny").textContent  = cny(s.cny);
+  $("#hUsdt").textContent = usdt(s.usdt);
+  $("#hBtc").textContent  = "₿" + (s.btc ? s.btc.toFixed(6) : "0");
+  $("#hCnySub").textContent  = s.n ? `${s.n} 笔 · 单笔均值 ${cny(s.cny/s.n)}` : "还没有投入";
+  $("#hUsdtSub").textContent = s.n && isFinite(s.avgRate) ? `均价 ¥${s.avgRate.toFixed(4)} 兑入` : "经 C2C 兑入";
+  $("#hBtcSub").textContent  = s.btc ? `${sats(s.btc)} sats` : "现货买入";
+  $("#hRate").textContent = isFinite(s.avgRate) ? "¥"+s.avgRate.toFixed(4) : "—";
+  $("#hCost").textContent = isFinite(s.costU) ? (isCny ? "¥"+fmtK(s.costC) : "₮"+fmt(s.costU,0)) : "—";
+
+  const val = isCny?s.valC:s.valU, pnl = isCny?s.pnlC:s.pnlU, roi = isCny?s.roiC:s.roiU;
+  $("#sValue").textContent = isFinite(val) ? (isCny?cny(val):usdt(val)) : "—";
+  const eP=$("#sPnl"), eR=$("#sRoi"), eI=$("#sIrr");
+  eP.textContent = isFinite(pnl) ? (pnl>=0?"+":"−")+(isCny?"¥":"₮")+fmtK(Math.abs(pnl)) : "—";
+  eR.textContent = pct(roi);
+  eI.textContent = pct(s.irr);
+  [[eP,pnl],[eR,roi],[eI,s.irr]].forEach(([el,v])=> el.className = "v num " + (!isFinite(v)?"flat":v>=0?"up":"down"));
+  $("#lIrr").textContent = isCny ? "年化 IRR · ¥" : "年化 IRR · ₮";
+
+  const vs = $("#pxVs"), mv = $("#mVs");
+  if (isFinite(s.costU) && isFinite(s.px)){
+    const d = (s.px - s.costU)/s.costU, k = d>=0 ? "up" : "down";
+    vs.innerHTML = `<small>较持仓均价</small>${pct(d)}`; vs.className = "vs num "+k;
+    mv.textContent = pct(d); mv.className = k;
+  } else {
+    vs.innerHTML = `<small>较持仓均价</small>—`; vs.className = "vs num flat";
+    mv.textContent = "—"; mv.className = "flat";
+  }
+  $("#mPx").textContent = price.v ? fmt(price.v,0) : "—";
+
+  renderCadence(s);
+  renderRows(s);
+  drawChart(s);
+}
+
+function renderCadence(s){
+  const el = $("#cadence");
+  if (!s.n){ el.textContent = ""; el.className = "cadence"; return; }
+  const last = new Date(s.list[s.list.length-1].date).getTime();
+  const since = Math.max(0, Math.floor((Date.now()-last)/DAY));
+  let gap = "";
+  if (s.n > 1){
+    const span = (last - new Date(s.list[0].date).getTime())/DAY;
+    gap = ` · 平均间隔 ${Math.round(span/(s.n-1))} 天`;
+  }
+  el.textContent = `距上次定投 ${since} 天${gap}`;
+  el.className = "cadence" + (since >= 32 ? " due" : "");
+  el.innerHTML = el.textContent.replace(/(\d+) 天/, "<b>$1 天</b>");
+}
+
+function renderRows(s){
+  const box = $("#rows");
+  if (!s.n){
+    box.innerHTML = `<div class="empty">
+      <div class="lbl">空账本</div>
+      <p>每笔记录都是一条链：人民币 → USDT → 比特币。</p>
+      <p style="color:var(--faint);margin-bottom:16px">先在币安 C2C 买 U，再用 U 买币，两段都记下来才算清成本。</p>
+      <button type="button" class="btn primary" id="emptyAdd">记第一笔</button>
+    </div>`;
+    $("#emptyAdd").addEventListener("click", ()=> openForm(null));
+    return;
+  }
+  const years = {};
+  s.list.slice().reverse().forEach(r => { (years[r.date.slice(0,4)] ||= []).push(r); });
+  let html = "";
+  for (const y of Object.keys(years).sort().reverse()){
+    const rs = years[y], open = !collapsed[y];
+    const yc = rs.reduce((a,x)=>a+x.cny,0), yb = rs.reduce((a,x)=>a+x.btc,0);
+    html += `<button type="button" class="yr" data-yr="${y}" aria-expanded="${open}">
+      <span class="y"><span class="cv">▾</span>${y}</span>
+      <span class="s">${rs.length} 笔 · ${cny(yc)} · ₿${yb.toFixed(6)}</span></button>`;
+    if (!open) continue;
+    for (const r of rs){
+      const p = isFinite(s.px) ? (s.px-r.price)/r.price : NaN;
+      const k = !isFinite(p) ? "flat" : p>=0 ? "up" : "down";
+      html += `<button type="button" class="row" data-id="${r.id}">
+        <span class="d">${r.date.slice(2)}</span>
+        <span class="r c-cny hide-m">¥${fmt(r.cny,0)}</span>
+        <span class="r hide-m" style="color:var(--dim)">${r.rate.toFixed(3)}</span>
+        <span class="r c-usdt hide-m">${fmt(r.usdt,2)}</span>
+        <span class="r hide-m" style="color:var(--dim)">${fmt(r.price,0)}</span>
+        <span class="r c-btc hide-m">${r.btc.toFixed(6)}</span>
+        <span class="r pnl ${k}">${pct(p)}</span>
+        <span class="mini"><span class="c-cny">¥${fmt(r.cny,0)}</span> <span style="color:var(--faint)">→</span> <span class="c-usdt">${fmt(r.usdt,2)}₮</span> <span style="color:var(--faint)">→</span> <span class="c-btc">₿${r.btc.toFixed(6)}</span><br><span style="color:var(--faint)">C2C ${r.rate.toFixed(3)} · BTC ${fmt(r.price,0)}${r.note ? " · "+esc(r.note) : ""}</span></span>
+      </button>`;
+    }
+  }
+  box.innerHTML = html;
+}
+const esc = t => String(t).replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+
+/* ═══════════ 图表 ═══════════ */
+const cv = $("#cv"), ctx = cv.getContext("2d");
+let marks = [];
+
+function drawChart(s){
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return;
+  cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const cs = getComputedStyle(document.documentElement), C = k => cs.getPropertyValue(k).trim();
+  const padR = W < 420 ? 42 : 52;
+  const x0 = 4, x1 = W - padR, y0 = 14, y1 = H - 20;
+  marks = [];
+
+  if (!s.n || (!isFinite(s.px) && chartTab !== "stack")){
+    ctx.fillStyle = C("--faint"); ctx.font = "11px "+C("--mono"); ctx.textAlign = "center";
+    ctx.fillText(s.n ? "等待 BTC 行情" : "记录后显示图表", W/2, H/2);
+    $("#legend").innerHTML = ""; $("#chartNote").textContent = ""; return;
+  }
+
+  const isCny = state.settings.base === "CNY", K = isCny ? state.settings.fx : 1, U = isCny ? "¥" : "₮";
+  const t0 = new Date(s.list[0].date).getTime(), tN = Date.now();
+  const span = Math.max(tN - t0, DAY);
+  const X = t => x0 + (t-t0)/span*(x1-x0);
+  const grid = (lo,hi,f) => {
+    ctx.font = "10px "+C("--mono"); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    for (let i=0;i<=3;i++){
+      const v = lo+(hi-lo)*i/3, y = y1-(i/3)*(y1-y0);
+      ctx.strokeStyle = C("--line-soft"); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0,y+.5); ctx.lineTo(x1,y+.5); ctx.stroke();
+      ctx.fillStyle = C("--faint"); ctx.fillText(f(v), x1+7, y);
+    }
+  };
+  const axisX = () => {
+    ctx.font = "10px "+C("--mono"); ctx.fillStyle = C("--faint"); ctx.textBaseline = "top";
+    ctx.textAlign = "left";  ctx.fillText(s.list[0].date.slice(2,7), x0, y1+6);
+    ctx.textAlign = "right"; ctx.fillText("现在", x1, y1+6);
+  };
+
+  if (chartTab === "stack"){
+    let cb = 0; const pts = [];
+    for (const r of s.list){
+      const t = new Date(r.date).getTime();
+      pts.push([t,cb]); cb += r.btc; pts.push([t,cb]);
+      marks.push({ x:X(t), v:cb, t, title:r.date,
+        lines:[["本笔","₿"+r.btc.toFixed(6)],["累计","₿"+cb.toFixed(6)],["占比",((r.btc/s.btc)*100).toFixed(1)+"%"]] });
+    }
+    pts.push([tN,cb]);
+    const hi = cb*1.12, Y = v => y1 - v/(hi||1)*(y1-y0);
+    marks.forEach(m => m.y = Y(m.v));
+    grid(0, hi, v => v>=1 ? "₿"+v.toFixed(2) : (v*1e8/1e3).toFixed(0)+"k sat");
+
+    const g = ctx.createLinearGradient(0,y0,0,y1);
+    g.addColorStop(0, C("--btc")+"44"); g.addColorStop(1, C("--btc")+"03");
+    ctx.beginPath(); ctx.moveTo(X(pts[0][0]), y1);
+    pts.forEach(p=> ctx.lineTo(X(p[0]),Y(p[1]))); ctx.lineTo(X(tN),y1); ctx.closePath();
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
+    ctx.strokeStyle = C("--btc"); ctx.lineWidth = 2; ctx.stroke();
+    marks.forEach(m=>{ ctx.beginPath(); ctx.arc(m.x,m.y,2.4,0,7); ctx.fillStyle=C("--btc"); ctx.fill(); });
+    axisX();
+
+    const days = Math.max(1,(tN-t0)/DAY), mo = days/30.44;
+    $("#legend").innerHTML =
+      `<span class="lg"><s style="background:${C("--btc")}"></s>累计 ₿${cb.toFixed(8)}</span>
+       <span class="lg">${sats(cb)} sats</span>
+       <span class="lg">单笔均 ₿${(cb/s.n).toFixed(6)}</span>`;
+    $("#chartNote").textContent = `${mo.toFixed(1)} 个月 ${s.n} 笔，平均每月攒 ₿${(cb/mo).toFixed(6)}。这条线只由买入行为决定，与币价无关——定投里唯一完全可控的变量。`;
+  }
+
+  else if (chartTab === "cost"){
+    let cum = 0, cb = 0; const inv = [], val = [];
+    for (const r of s.list){
+      const t = new Date(r.date).getTime();
+      inv.push([t,cum]); cb += r.btc; cum += isCny ? r.cny : r.usdt; inv.push([t,cum]);
+      const v = cb*r.price*K;
+      val.push([t,v]);
+      marks.push({ x:X(t), v, t, title:r.date,
+        lines:[["投入",U+fmtK(cum)],["市值",U+fmtK(v)],["盈亏",pct(v/cum-1)]] });
+    }
+    inv.push([tN,cum]);
+    const vNow = s.btc*s.px*K; val.push([tN,vNow]);
+    marks.push({ x:X(tN), v:vNow, t:tN, title:"现在",
+      lines:[["投入",U+fmtK(cum)],["市值",U+fmtK(vNow)],["盈亏",pct(vNow/cum-1)]] });
+    const hi = Math.max(...inv.concat(val).map(p=>p[1]))*1.1;
+    const Y = v => y1 - v/(hi||1)*(y1-y0);
+    marks.forEach(m => m.y = Y(m.v));
+    grid(0, hi, v => U+fmtK(v));
+
+    const col = vNow >= cum ? C("--up") : C("--down");
+    const g = ctx.createLinearGradient(0,y0,0,y1);
+    g.addColorStop(0, col+"36"); g.addColorStop(1, col+"02");
+    ctx.beginPath(); ctx.moveTo(X(val[0][0]),Y(val[0][1]));
+    val.forEach(p=>ctx.lineTo(X(p[0]),Y(p[1]))); ctx.lineTo(X(tN),y1); ctx.lineTo(X(val[0][0]),y1);
+    ctx.closePath(); ctx.fillStyle = g; ctx.fill();
+
+    ctx.beginPath(); inv.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
+    ctx.strokeStyle = C("--dim"); ctx.lineWidth = 1.4; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); val.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(tN),Y(vNow),3.4,0,7); ctx.fillStyle = col; ctx.fill();
+    axisX();
+    $("#legend").innerHTML =
+      `<span class="lg"><s style="background:${C("--dim")}"></s>累计投入</span>
+       <span class="lg"><s style="background:${col}"></s>持仓市值</span>`;
+    $("#chartNote").textContent = "市值按每笔买入当日价与当前价采样，两点间为直线连接，不是逐日真实走势。";
+  }
+
+  else {
+    const arr = s.list.map(r=>r.price*K).concat([s.px*K, s.costU*K]);
+    const hi = Math.max(...arr)*1.08, lo = Math.min(...arr)*0.92;
+    const Y = v => y1 - (v-lo)/(hi-lo||1)*(y1-y0);
+    grid(lo, hi, v => U+fmtK(v));
+    const maxA = Math.max(...s.list.map(r=>r.cny));
+    ctx.beginPath(); ctx.moveTo(x0,Y(s.costU*K)); ctx.lineTo(x1,Y(s.costU*K));
+    ctx.strokeStyle = C("--btc"); ctx.lineWidth = 1.4; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]);
+    const col = s.px >= s.costU ? C("--up") : C("--down");
+    ctx.beginPath(); ctx.moveTo(x0,Y(s.px*K)); ctx.lineTo(x1,Y(s.px*K));
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke();
+    s.list.forEach(r=>{
+      const t = new Date(r.date).getTime(), rad = 2.6+3.4*Math.sqrt(r.cny/maxA);
+      const x = X(t), y = Y(r.price*K);
+      ctx.beginPath(); ctx.arc(x,y,rad,0,7);
+      ctx.fillStyle = C("--btc") + (r.price<=s.costU ? "E6" : "50"); ctx.fill();
+      ctx.strokeStyle = C("--panel"); ctx.lineWidth = 1.2; ctx.stroke();
+      marks.push({ x, y, v:r.price*K, t, title:r.date,
+        lines:[["成交价",U+fmtK(r.price*K)],["投入","¥"+fmt(r.cny,0)],["买到","₿"+r.btc.toFixed(6)]] });
+    });
+    axisX();
+    const below = s.list.filter(r=>r.price<=s.costU).length;
+    $("#legend").innerHTML =
+      `<span class="lg"><s style="background:${C("--btc")}"></s>单笔成交（面积＝投入额）</span>
+       <span class="lg"><s style="background:${C("--btc")};opacity:.55"></s>持仓均价 ${U+fmtK(s.costU*K)}</span>
+       <span class="lg"><s style="background:${col}"></s>当前价</span>`;
+    $("#chartNote").textContent = `${below}/${s.n} 笔买在均价之下（实心点），这部分决定了均价被拉低多少。`;
+  }
+
+  drawHover(C, y0, y1, W);
+}
+
+function drawHover(C, y0, y1, W){
+  if (hoverX == null || !marks.length) return;
+  let m = marks[0];
+  for (const k of marks) if (Math.abs(k.x-hoverX) < Math.abs(m.x-hoverX)) m = k;
+  if (Math.abs(m.x-hoverX) > 60) return;
+
+  ctx.strokeStyle = C("--faint"); ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+  ctx.beginPath(); ctx.moveTo(m.x, y0-8); ctx.lineTo(m.x, y1); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(m.x, m.y, 4.5, 0, 7); ctx.fillStyle = C("--btc"); ctx.fill();
+  ctx.strokeStyle = C("--panel"); ctx.lineWidth = 2; ctx.stroke();
+
+  const mono = C("--mono");
+  ctx.font = "600 10px "+mono;
+  let w = ctx.measureText(m.title).width;
+  ctx.font = "10px "+mono;
+  m.lines.forEach(l => { w = Math.max(w, ctx.measureText(l[0]).width + ctx.measureText(l[1]).width + 16); });
+  const bw = w+18, bh = 20 + m.lines.length*14;
+  let bx = m.x + 12; if (bx + bw > W-2) bx = m.x - bw - 12; if (bx < 2) bx = 2;
+  let by = Math.min(Math.max(m.y - bh/2, 2), y1 - bh);
+
+  ctx.fillStyle = C("--panel"); ctx.strokeStyle = C("--line"); ctx.lineWidth = 1;
+  if (ctx.roundRect){ ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,8); ctx.fill(); ctx.stroke(); }
+  else { ctx.fillRect(bx,by,bw,bh); ctx.strokeRect(bx,by,bw,bh); }
+
+  ctx.textBaseline = "middle"; ctx.textAlign = "left";
+  ctx.font = "600 10px "+mono; ctx.fillStyle = C("--text");
+  ctx.fillText(m.title, bx+9, by+13);
+  ctx.font = "10px "+mono;
+  m.lines.forEach((l,i)=>{
+    const y = by+29+i*14;
+    ctx.fillStyle = C("--faint"); ctx.textAlign = "left";  ctx.fillText(l[0], bx+9, y);
+    ctx.fillStyle = C("--text");  ctx.textAlign = "right"; ctx.fillText(l[1], bx+bw-9, y);
+  });
+  ctx.textAlign = "left";
+}
+
+function pointerAt(e){
+  const r = cv.getBoundingClientRect();
+  hoverX = e.clientX - r.left;
+  drawChart(calc());
+}
+cv.addEventListener("pointermove", e => { if (e.pointerType === "mouse" || e.buttons) pointerAt(e); });
+cv.addEventListener("pointerdown", pointerAt);
+["pointerleave","pointerup","pointercancel"].forEach(t =>
+  cv.addEventListener(t, ()=>{ hoverX = null; drawChart(calc()); }));
+
+let rt; new ResizeObserver(()=>{ clearTimeout(rt); rt = setTimeout(()=>drawChart(calc()), 60); }).observe($(".chartwrap"));
+
+/* ═══════════ 行情 ═══════════ */
+const SOURCES = [
+  ["Binance","https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
+  ["Binance","https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
+  ["OKX","https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", d=>+d.data[0].last],
+  ["Coinbase","https://api.coinbase.com/v2/prices/BTC-USD/spot", d=>+d.data.amount],
+  ["CoinGecko","https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", d=>+d.bitcoin.usd],
+];
+let fetching = false;
+async function fetchPrice(){
+  if (fetching) return; fetching = true;
+  $("#dot").classList.add("load");
+  if (isFinite(state.settings.manualPx) && state.settings.manualPx > 0){
+    price = { v: state.settings.manualPx, src: "手动设定", live: false };
+  } else {
+    let got = false;
+    for (const [name,url,pick] of SOURCES){
+      try{
+        const c = new AbortController(), tm = setTimeout(()=>c.abort(), 6000);
+        const res = await fetch(url,{signal:c.signal}); clearTimeout(tm);
+        if (!res.ok) continue;
+        const v = pick(await res.json());
+        if (isFinite(v) && v>0){ price = { v, src:name, live:true }; got = true; break; }
+      }catch(e){}
+    }
+    if (!got) price = { v: price.v, src: price.v ? price.src : "行情不可用", live: false };
+  }
+  $("#dot").classList.remove("load");
+  fetching = false; paintTick(); render();
+}
+function paintTick(){
+  $("#px").textContent = price.v ? fmt(price.v,2) : "—";
+  $("#pxCny").textContent = price.v ? `≈ ¥${fmt(price.v*state.settings.fx,0)} · 按汇率 ${state.settings.fx}` : "点击刷新";
+  $("#pxsrc").textContent = price.v ? (price.live ? `实时 · ${price.src}` : price.src) : "行情不可用";
+  $("#dot").className = "dot" + (price.live ? "" : " stale");
+  $("#setPxSrc").textContent = price.live ? `留空自动获取 · 当前 ${price.src}` : "留空则自动获取";
+}
+$("#tick").addEventListener("click", fetchPrice);
+
+/* ═══════════ 表单 ═══════════ */
+const F = { d:$("#fDate"), c:$("#fCny"), r:$("#fRate"), u:$("#fUsdt"), p:$("#fPrice"), b:$("#fBtc"), n:$("#fNote") };
+let tU = false, tB = false;
+F.u.addEventListener("input", ()=>{ tU = true; F.u.closest(".f").classList.add("touched"); syncB(); refreshHint(); });
+F.b.addEventListener("input", ()=>{ tB = true; F.b.closest(".f").classList.add("touched"); refreshHint(); });
+[F.c,F.r].forEach(el => el.addEventListener("input", ()=>{ syncU(); syncB(); refreshHint(); }));
+F.p.addEventListener("input", ()=>{ syncB(); refreshHint(); });
+function syncU(){ if (tU) return; const c=num(F.c.value), r=num(F.r.value);
+  F.u.value = (isFinite(c)&&isFinite(r)&&r>0) ? (c/r).toFixed(2) : ""; }
+function syncB(){ if (tB) return; const u=num(F.u.value), p=num(F.p.value);
+  F.b.value = (isFinite(u)&&isFinite(p)&&p>0) ? (u/p).toFixed(8) : ""; }
+function refreshHint(){
+  const c=num(F.c.value), b=num(F.b.value);
+  $("#fHint").textContent = (isFinite(c)&&isFinite(b)&&b>0)
+    ? `折合 ¥${fmt(c/b,0)}/枚 · ${sats(b)} sats` : "";
+}
+function today(){ return new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+function openForm(rec){
+  editingId = rec ? rec.id : null;
+  tU = tB = !!rec;
+  document.querySelectorAll(".f.derived").forEach(e=>e.classList.toggle("touched", !!rec));
+  $("#formTitle").textContent = rec ? "编辑记录" : "记一笔定投";
+  $("#fDelete").hidden = !rec;
+  const last = state.records[state.records.length-1];
+  F.d.value = rec ? rec.date : today();
+  F.c.value = rec ? rec.cny  : (last ? last.cny : "");
+  F.r.value = rec ? rec.rate : (last ? last.rate : state.settings.fx);
+  F.u.value = rec ? rec.usdt.toFixed(2) : "";
+  F.p.value = rec ? rec.price : (price.v ? price.v.toFixed(2) : "");
+  F.b.value = rec ? rec.btc.toFixed(8) : "";
+  F.n.value = rec ? (rec.note||"") : "";
+  if (!rec){ syncU(); syncB(); }
+  refreshHint();
+  $("#form").classList.add("open");
+  $("#form").scrollIntoView({ behavior:"smooth", block:"center" });
+  setTimeout(()=>F.c.focus(), 250);
+}
+function closeForm(){ $("#form").classList.remove("open"); editingId = null; }
+$("#btnAdd").addEventListener("click", ()=> $("#form").classList.contains("open") ? closeForm() : openForm(null));
+$("#fCancel").addEventListener("click", closeForm);
+
+$("#form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const c=num(F.c.value), r=num(F.r.value), p=num(F.p.value);
+  let u=num(F.u.value), b=num(F.b.value);
+  if (!F.d.value) return toast("请填日期");
+  if (!(c>0)) return toast("人民币金额不对");
+  if (!(r>0)) return toast("C2C 单价不对");
+  if (!(p>0)) return toast("BTC 成交价不对");
+  if (!(u>0)) u = c/r;
+  if (!(b>0)) b = u/p;
+  const rec = { id: editingId||uid(), date:F.d.value, cny:c, rate:r, usdt:u, price:p, btc:b, note:F.n.value.trim() };
+  const was = editingId;
+  if (was){ state.records[state.records.findIndex(x=>x.id===was)] = rec; }
+  else state.records.push(rec);
+  state.records.sort((a,b2)=> a.date<b2.date ? -1 : 1);
+  await persist(); closeForm(); render();
+  toast(was ? "已更新" : `已记 ₿${b.toFixed(6)}`);
+});
+
+$("#fDelete").addEventListener("click", async ()=>{
+  const id = editingId; if (!id) return;
+  const rec = state.records.find(x=>x.id===id);
+  state.records = state.records.filter(x=>x.id!==id);
+  await persist(); closeForm(); render();
+  toast(`已删除 ${rec.date} 的 ¥${fmt(rec.cny,0)}`, "撤销", async ()=>{
+    state.records.push(rec);
+    state.records.sort((a,b)=> a.date<b.date ? -1 : 1);
+    await persist(); render(); toast("已恢复");
+  });
+});
+
+$("#rows").addEventListener("click", e=>{
+  const yr = e.target.closest("[data-yr]");
+  if (yr){ const y = yr.dataset.yr; collapsed[y] = !collapsed[y]; renderRows(calc()); return; }
+  const row = e.target.closest(".row");
+  if (row) openForm(state.records.find(x=>x.id===row.dataset.id));
+});
+
+/* ═══════════ 切换 ═══════════ */
+const seg = (a,b,on)=>{ a.setAttribute("aria-pressed",on); b.setAttribute("aria-pressed",!on); };
+$("#baseCny").addEventListener("click", async ()=>{ state.settings.base="CNY"; seg($("#baseCny"),$("#baseUsdt"),true); await persist(); render(); });
+$("#baseUsdt").addEventListener("click", async ()=>{ state.settings.base="USDT"; seg($("#baseUsdt"),$("#baseCny"),true); await persist(); render(); });
+const TABS = { stack:"#tabStack", cost:"#tabCost", buy:"#tabBuy" };
+Object.keys(TABS).forEach(k => $(TABS[k]).addEventListener("click", ()=>{
+  chartTab = k; hoverX = null;
+  for (const [n,sel] of Object.entries(TABS)) $(sel).setAttribute("aria-pressed", n===k);
+  drawChart(calc());
+}));
+
+/* ═══════════ 主题 ═══════════ */
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t==="dark" ? "dark" : "light");
+  const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", bg);
+}
+$("#btnTheme").addEventListener("click", async ()=>{
+  state.settings.theme = state.settings.theme==="dark" ? "light" : "dark";
+  applyTheme(state.settings.theme); render(); await persist();
+});
+
+/* ═══════════ 设置 ═══════════ */
+$("#btnSettings").addEventListener("click", ()=>{
+  $("#setFx").value = state.settings.fx;
+  $("#setPx").value = state.settings.manualPx || "";
+  seg($("#cnRed"), $("#cnGreen"), state.settings.redUp);
+  $("#mSettings").classList.add("open");
+});
+$("#setClose").addEventListener("click", async ()=>{
+  const fx = num($("#setFx").value); if (fx>0) state.settings.fx = fx;
+  const mp = num($("#setPx").value); state.settings.manualPx = mp>0 ? mp : null;
+  $("#mSettings").classList.remove("open"); await persist(); await fetchPrice();
+});
+$("#cnRed").addEventListener("click", async ()=>{ state.settings.redUp=true;  seg($("#cnRed"),$("#cnGreen"),true);  render(); await persist(); });
+$("#cnGreen").addEventListener("click", async ()=>{ state.settings.redUp=false; seg($("#cnGreen"),$("#cnRed"),true); render(); await persist(); });
+
+/* ═══════════ 数据 ═══════════ */
+$("#btnData").addEventListener("click", ()=>{
+  $("#dataText").value = JSON.stringify({ records: state.records, settings: state.settings }, null, 1);
+  $("#mData").classList.add("open");
+});
+$("#dClose").addEventListener("click", ()=> $("#mData").classList.remove("open"));
+$("#dImport").addEventListener("click", async ()=>{
+  try{
+    const o = JSON.parse($("#dataText").value);
+    if (!Array.isArray(o.records)) throw 0;
+    const backup = state.records.slice();
+    state.records = o.records.map(r=>({ ...r, id: r.id||uid() })).sort((a,b)=> a.date<b.date ? -1 : 1);
+    if (o.settings) state.settings = { ...state.settings, ...o.settings };
+    applyTheme(state.settings.theme);
+    await persist(); $("#mData").classList.remove("open"); render();
+    toast(`导入 ${state.records.length} 笔`, "撤销", async ()=>{
+      state.records = backup; await persist(); render(); toast("已还原");
+    });
+  }catch(e){ toast("JSON 格式不对，检查后重试"); }
+});
+$("#dCsv").addEventListener("click", ()=>{
+  const head = "日期,人民币,C2C单价,USDT,BTC成交价,BTC数量,备注\n";
+  const body = state.records.map(r=>[r.date,r.cny,r.rate,r.usdt,r.price,r.btc,`"${(r.note||"").replace(/"/g,'""')}"`].join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF"+head+body],{type:"text/csv;charset=utf-8"}));
+  a.download = `btc-dca-${today()}.csv`; a.click();
+  toast("CSV 已下载");
+});
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e=>{ if (e.target===m) m.classList.remove("open"); }));
+
+/* ═══════════ 提示 ═══════════ */
+let tt, undoFn = null;
+function toast(msg, action, fn){
+  const t=$("#toast"), b=$("#toastBtn");
+  $("#toastMsg").textContent = msg;
+  undoFn = fn || null;
+  if (action){ b.hidden=false; b.textContent=action; t.classList.remove("plain"); }
+  else { b.hidden=true; t.classList.add("plain"); }
+  t.classList.add("show"); clearTimeout(tt);
+  tt = setTimeout(()=>t.classList.remove("show"), action ? 6000 : 2400);
+}
+$("#toastBtn").addEventListener("click", ()=>{ $("#toast").classList.remove("show"); if (undoFn) undoFn(); undoFn=null; });
+async function persist(){ if (!(await store.save({ records: state.records, settings: state.settings }))) toast("保存失败，请用「数据」导出备份"); }
+
+/* ═══════════ 键盘 ═══════════ */
+document.addEventListener("keydown", e=>{
+  if (e.key === "Escape"){
+    const open = document.querySelector(".modal.open");
+    if (open) open.classList.remove("open");
+    else if ($("#form").classList.contains("open")) closeForm();
+  }
+  if ((e.metaKey||e.ctrlKey) && e.key === "Enter" && $("#form").classList.contains("open"))
+    $("#form").requestSubmit();
+});
+addEventListener("scroll", ()=> $("#hdr").classList.toggle("scrolled", scrollY > 90), { passive:true });
+
+/* ═══════════ 图标兜底 ═══════════
+   正常情况下用同目录的 icon-*.png。若只单独部署了 index.html（图标文件缺失），
+   这里用 canvas 现画一个注入，保证不至于变成网页截图。 */
+(function(){
+  const probe = new Image();
+  probe.onerror = () => {
+    try{
+      const draw = size => {
+        const c = document.createElement("canvas"); c.width = c.height = size;
+        const x = c.getContext("2d"), s = size/512;
+        x.fillStyle = "#0E1013"; x.fillRect(0,0,size,size);
+        x.save(); x.translate(size/2, size/2); x.rotate(-13*Math.PI/180);
+        x.fillStyle = "#F7931A";
+        x.font = `bold ${300*s}px "Helvetica Neue", Arial, Helvetica, sans-serif`;
+        x.textAlign = "center"; x.textBaseline = "middle";
+        x.fillText("B", 6*s, 0);
+        x.fillRect(-94*s, -158*s, 34*s, 316*s);
+        x.fillRect(-36*s, -158*s, 34*s, 316*s);
+        x.restore();
+        return c.toDataURL("image/png");
+      };
+      document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="manifest"]')
+        .forEach(l => l.remove());
+      const add = (rel, href, attrs={}) => {
+        const l = document.createElement("link"); l.rel = rel; l.href = href;
+        Object.entries(attrs).forEach(([k,v]) => l.setAttribute(k,v));
+        document.head.appendChild(l);
+      };
+      const big = draw(512);
+      add("icon", big, { type:"image/png", sizes:"512x512" });
+      add("apple-touch-icon", draw(180));
+      const mf = { name:"定投账本", short_name:"定投", start_url:"./", scope:"./",
+        display:"standalone", orientation:"portrait", lang:"zh-CN",
+        background_color:"#F5F4F1", theme_color:"#F5F4F1",
+        icons:[{ src:big, sizes:"512x512", type:"image/png", purpose:"any maskable" }] };
+      add("manifest", URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"})));
+    }catch(e){}
+  };
+  probe.src = "icon-192.png";
+})();
+
+/* ═══════════ 启动 ═══════════ */
+(async function init(){
+  const saved = await store.load();
+  if (saved){
+    state.records = (saved.records||[]).map(r=>({ ...r, id: r.id||uid() })).sort((a,b)=> a.date<b.date ? -1 : 1);
+    state.settings = { ...state.settings, ...(saved.settings||{}) };
+  }
+  applyTheme(state.settings.theme);
+  seg($("#baseCny"), $("#baseUsdt"), state.settings.base === "CNY");
+  paintTick(); render();
+  await fetchPrice();
+  setInterval(fetchPrice, 60000);
+  document.addEventListener("visibilitychange", ()=>{ if (!document.hidden) fetchPrice(); });
+})();
+</script>
+</body>
+</html>
