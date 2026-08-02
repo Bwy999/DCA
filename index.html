@@ -191,6 +191,15 @@ canvas{display:block;width:100%;height:100%}
 .srow .k small{display:block;color:var(--faint);font-size:12px;margin-top:3px;line-height:1.45;letter-spacing:-0.005em}
 .srow input{background:var(--fill);border:1px solid transparent;border-radius:10px;padding:9px 11px;font-family:var(--mono);font-size:15px;width:118px;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-0.03em}
 .srow input:focus{border-color:var(--btc);outline:none}
+.bstate{font-size:13px;color:var(--dim);margin:0;letter-spacing:-0.005em}
+.bstate.warn{color:var(--btc)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 4px}
+.dgrid .btn{padding:12px 10px;text-align:center}
+.dman{border-top:1px solid var(--line-soft);margin-top:16px}
+.dman summary{font-size:13px;color:var(--dim);cursor:pointer;padding:14px 0;list-style:none;user-select:none}
+.dman summary::-webkit-details-marker{display:none}
+.dman summary::before{content:"›";margin-right:9px;display:inline-block;transition:transform .2s;color:var(--faint)}
+.dman[open] summary::before{transform:rotate(90deg)}
 textarea{width:100%;height:180px;background:var(--fill);border:1px solid transparent;border-radius:12px;color:var(--text);font-family:var(--mono);font-size:12px;padding:13px;resize:vertical;line-height:1.55;letter-spacing:-0.02em}
 textarea:focus{border-color:var(--btc);outline:none}
 footer{text-align:center;padding:10px 0 34px}
@@ -361,15 +370,21 @@ footer span{font-size:11.5px;color:var(--faint)}
 
 <div class="modal" id="mData">
   <div class="sheet">
-    <h3>数据备份</h3>
-    <textarea id="dataText" spellcheck="false" aria-label="账本 JSON"></textarea>
-    <div class="factions" style="justify-content:space-between">
+    <h3>数据</h3>
+    <p class="bstate" id="bState">—</p>
+    <div class="dgrid">
+      <button class="btn primary" id="dExport">导出备份</button>
+      <button class="btn" id="dImportFile">导入备份</button>
       <button class="btn" id="dCsv">导出 CSV</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="dClose">关闭</button>
-        <button class="btn primary" id="dImport">导入覆盖</button>
-      </div>
+      <button class="btn" id="dCopy">复制 JSON</button>
     </div>
+    <details class="dman">
+      <summary>手动编辑 JSON</summary>
+      <textarea id="dataText" spellcheck="false" aria-label="账本 JSON"></textarea>
+      <div class="factions"><button class="btn" id="dImport">导入这段文本</button></div>
+    </details>
+    <div class="factions"><button class="btn" id="dClose">完成</button></div>
+    <input type="file" id="fileInput" accept="application/json,.json" hidden>
   </div>
 </div>
 
@@ -398,7 +413,7 @@ const store = {
 };
 
 /* ═══════════ 状态 ═══════════ */
-let state = { records: [], settings: { fx: 7.25, base: "CNY", manualPx: null, manualFx: null, redUp: true, theme: "light" } };
+let state = { records: [], settings: { fx: 7.25, base: "CNY", manualPx: null, manualFx: null, redUp: true, theme: "light", lastBackup: null } };
 let price = { v: null, src: "—", live: false };
 let fxInfo = { src: "默认值", live: false };
 let editingId = null, chartTab = "stack", collapsed = {}, hoverX = null;
@@ -971,33 +986,84 @@ $("#cnRed").addEventListener("click", async ()=>{ state.settings.redUp=true;  se
 $("#cnGreen").addEventListener("click", async ()=>{ state.settings.redUp=false; seg($("#cnGreen"),$("#cnRed"),true); render(); await persist(); });
 
 /* ═══════════ 数据 ═══════════ */
+function snapshot(){ return JSON.stringify({ records: state.records, settings: state.settings }, null, 1); }
+function download(name, text, mime){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+function paintBackupState(){
+  const el = $("#bState"), t = state.settings.lastBackup;
+  const n = state.records.length;
+  if (!t){
+    el.textContent = n ? `${n} 笔记录 · 还没有导出过备份` : "账本还是空的";
+    el.className = "bstate" + (n ? " warn" : "");
+    return;
+  }
+  const days = Math.floor((Date.now() - new Date(t).getTime())/DAY);
+  el.textContent = `${n} 笔记录 · 上次备份 ${days === 0 ? "就在今天" : days + " 天前"}`;
+  el.className = "bstate" + (days > 60 ? " warn" : "");
+}
+
+/* 导入一份账本，保留旧数据以便撤销 */
+async function applyImport(obj, label){
+  if (!obj || !Array.isArray(obj.records)) throw new Error("bad");
+  const backup = { records: state.records.slice(), settings: { ...state.settings } };
+  state.records = obj.records
+    .filter(r => r && r.date && r.cny > 0)
+    .map(r => ({ ...r, id: r.id || uid() }))
+    .sort((a,b)=> a.date < b.date ? -1 : 1);
+  if (obj.settings) state.settings = { ...state.settings, ...obj.settings };
+  applyTheme(state.settings.theme);
+  seg($("#baseCny"), $("#baseUsdt"), state.settings.base === "CNY");
+  await persist(); $("#mData").classList.remove("open"); render();
+  toast(`${label}${state.records.length} 笔`, "撤销", async ()=>{
+    state.records = backup.records; state.settings = backup.settings;
+    applyTheme(state.settings.theme); await persist(); render(); toast("已还原");
+  });
+}
+
 $("#btnData").addEventListener("click", ()=>{
-  $("#dataText").value = JSON.stringify({ records: state.records, settings: state.settings }, null, 1);
+  $("#dataText").value = snapshot();
+  paintBackupState();
   $("#mData").classList.add("open");
 });
 $("#dClose").addEventListener("click", ()=> $("#mData").classList.remove("open"));
-$("#dImport").addEventListener("click", async ()=>{
-  try{
-    const o = JSON.parse($("#dataText").value);
-    if (!Array.isArray(o.records)) throw 0;
-    const backup = state.records.slice();
-    state.records = o.records.map(r=>({ ...r, id: r.id||uid() })).sort((a,b)=> a.date<b.date ? -1 : 1);
-    if (o.settings) state.settings = { ...state.settings, ...o.settings };
-    applyTheme(state.settings.theme);
-    await persist(); $("#mData").classList.remove("open"); render();
-    toast(`导入 ${state.records.length} 笔`, "撤销", async ()=>{
-      state.records = backup; await persist(); render(); toast("已还原");
-    });
-  }catch(e){ toast("JSON 格式不对，检查后重试"); }
+
+$("#dExport").addEventListener("click", async ()=>{
+  download(`定投账本-${today()}.json`, snapshot(), "application/json");
+  state.settings.lastBackup = new Date().toISOString();
+  await persist(); paintBackupState();
+  toast(`已导出 ${state.records.length} 笔`);
 });
+
+$("#dImportFile").addEventListener("click", ()=> $("#fileInput").click());
+$("#fileInput").addEventListener("change", async e=>{
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try{ await applyImport(JSON.parse(await file.text()), "已从备份恢复 "); }
+  catch(err){ toast("这个文件读不出账本内容"); }
+});
+
+$("#dImport").addEventListener("click", async ()=>{
+  try{ await applyImport(JSON.parse($("#dataText").value), "已导入 "); }
+  catch(err){ toast("JSON 格式不对，检查后重试"); }
+});
+
+$("#dCopy").addEventListener("click", async ()=>{
+  try{ await navigator.clipboard.writeText(snapshot()); toast("已复制到剪贴板"); }
+  catch(err){ $("#dataText").select(); toast("请手动复制下方文本"); }
+});
+
 $("#dCsv").addEventListener("click", ()=>{
   const head = "日期,人民币,C2C单价,USDT,BTC成交价,BTC数量,备注\n";
   const body = state.records.map(r=>[r.date,r.cny,r.rate,r.usdt,r.price,r.btc,`"${(r.note||"").replace(/"/g,'""')}"`].join(",")).join("\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF"+head+body],{type:"text/csv;charset=utf-8"}));
-  a.download = `btc-dca-${today()}.csv`; a.click();
-  toast("CSV 已下载");
+  download(`定投账本-${today()}.csv`, "\uFEFF"+head+body, "text/csv;charset=utf-8");
+  toast("CSV 已导出");
 });
+
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e=>{ if (e.target===m) m.classList.remove("open"); }));
 
 /* ═══════════ 提示 ═══════════ */
