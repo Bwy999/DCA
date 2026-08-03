@@ -766,14 +766,62 @@ cv.addEventListener("pointerdown", pointerAt);
 let rt; new ResizeObserver(()=>{ clearTimeout(rt); rt = setTimeout(()=>drawChart(calc()), 60); }).observe($(".chartwrap"));
 
 /* ═══════════ 行情 ═══════════ */
-const SOURCES = [
-  ["Binance","https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", d=>({v:+d.lastPrice, chg:+d.priceChangePercent/100})],
-  ["Binance","https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT", d=>({v:+d.lastPrice, chg:+d.priceChangePercent/100})],
-  ["OKX","https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", d=>{const t=d.data[0]; return {v:+t.last, chg:+t.open24h>0 ? (+t.last)/(+t.open24h)-1 : null};}],
-  ["Coinbase","https://api.coinbase.com/v2/prices/BTC-USD/spot", d=>({v:+d.data.amount, chg:null})],
-  ["CoinGecko","https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-   d=>({v:+d.bitcoin.usd, chg: d.bitcoin.usd_24h_change != null ? +d.bitcoin.usd_24h_change/100 : null})],
+/* 价格与 24h 涨跌分开取：价格是关键数据，走最稳的轻量接口；
+   涨跌是锦上添花，单独异步补，拿不到就不显示，绝不拖累价格。 */
+const PRICE_SOURCES = [
+  ["Binance","https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
+  ["Binance","https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
+  ["OKX","https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", d=>+d.data[0].last],
+  ["Coinbase","https://api.coinbase.com/v2/prices/BTC-USD/spot", d=>+d.data.amount],
+  ["CoinGecko","https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", d=>+d.bitcoin.usd],
 ];
+const CHG_SOURCES = [
+  ["https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", d=>+d.priceChangePercent/100],
+  ["https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT", d=>+d.priceChangePercent/100],
+  ["https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT",
+   d=>{ const t=d.data[0]; return +t.open24h>0 ? (+t.last)/(+t.open24h)-1 : NaN; }],
+  ["https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
+   d=>+d.bitcoin.usd_24h_change/100],
+];
+
+async function grab(url, ms=5000){
+  const c = new AbortController(), tm = setTimeout(()=>c.abort(), ms);
+  try{
+    const res = await fetch(url, { signal:c.signal });
+    clearTimeout(tm);
+    if (!res.ok) return null;
+    return await res.json();
+  }catch(e){ clearTimeout(tm); return null; }
+}
+
+/* USD/CNY 官方汇率。注意：C2C 的稳定币报价通常带 0.5%~2% 溢价，
+   且无公开接口，这里取到的只作人民币本位估值用。 */
+const FX_SOURCES = [
+  ["Frankfurter","https://api.frankfurter.app/latest?from=USD&to=CNY", d=>+d.rates.CNY],
+  ["Currency-API","https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json", d=>+d.usd.cny],
+  ["Currency-API","https://latest.currency-api.pages.dev/v1/currencies/usd.json", d=>+d.usd.cny],
+  ["ER-API","https://open.er-api.com/v6/latest/USD", d=>+d.rates.CNY],
+];
+let fxing = false;
+async function fetchFx(){
+  if (fxing) return; fxing = true;
+  if (state.settings.manualFx > 0){
+    state.settings.fx = state.settings.manualFx;
+    fxInfo = { src:"手动设定", live:false }; fxing = false; return;
+  }
+  for (const [name,url,pick] of FX_SOURCES){
+    const j = await grab(url, 5000); if (!j) continue;
+    let v; try{ v = pick(j); }catch(e){ continue; }
+    if (v > 3 && v < 20){
+      state.settings.fx = +v.toFixed(4);
+      fxInfo = { src:name, live:true };
+      await persist(); fxing = false; return;
+    }
+  }
+  if (!fxInfo.live) fxInfo = { src:"取不到，用上次的值", live:false };
+  fxing = false;
+}
+
 let fetching = false;
 async function fetchPrice(){
   if (fetching) return; fetching = true;
@@ -782,29 +830,32 @@ async function fetchPrice(){
     price = { v: state.settings.manualPx, chg: null, src: "手动设定", live: false };
   } else {
     let got = false;
-    for (const [name,url,pick] of SOURCES){
-      try{
-        const c = new AbortController(), tm = setTimeout(()=>c.abort(), 6000);
-        const res = await fetch(url,{signal:c.signal}); clearTimeout(tm);
-        if (!res.ok) continue;
-        const r = pick(await res.json());
-        if (r && isFinite(r.v) && r.v>0){
-          price = { v:r.v, chg: isFinite(r.chg) ? r.chg : null, src:name, live:true };
-          got = true; break;
-        }
-      }catch(e){}
+    for (const [name,url,pick] of PRICE_SOURCES){
+      const j = await grab(url); if (!j) continue;
+      let v; try{ v = pick(j); }catch(e){ continue; }
+      if (isFinite(v) && v > 0){ price = { v, chg: price.chg, src: name, live: true }; got = true; break; }
     }
-    if (!got) price = { ...price, live:false, src: price.v ? price.src : "行情不可用" };
+    if (!got) price = { ...price, live:false, src: price.v ? price.src+"（已失效）" : "行情不可用" };
   }
   $("#dot").classList.remove("load");
   fetching = false; paintTick(); render();
+  if (price.live) fetchChange();          // 不 await，拿不到也不影响价格
 }
+
+async function fetchChange(){
+  for (const [url,pick] of CHG_SOURCES){
+    const j = await grab(url, 4000); if (!j) continue;
+    let c; try{ c = pick(j); }catch(e){ continue; }
+    if (isFinite(c)){ price.chg = c; paintTick(); return; }
+  }
+}
+
 function paintTick(){
   $("#px").textContent = price.v ? "$"+fmt(price.v,0) : "—";
   const e24 = $("#px24");
   if (price.chg == null){ e24.textContent = price.v ? "24h —" : ""; e24.className = "num flat"; }
   else { e24.textContent = pct(price.chg)+" 24h"; e24.className = "num " + (price.chg>=0 ? "up" : "down"); }
-  $("#pxsrc").textContent = price.v ? (price.live ? price.src : price.src) : "行情不可用";
+  $("#pxsrc").textContent = price.v ? price.src : "行情不可用 · 点此重试";
   $("#dot").className = "dot" + (price.live ? "" : " stale");
   $("#setPxSrc").textContent = price.live ? `留空自动获取 · 当前 ${price.src}` : "留空则自动获取";
   $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v,0)}` : "自动";
