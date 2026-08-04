@@ -3,17 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F5F4F1">
-<meta name="description" content="比特币定投账本：记录人民币经 C2C 兑换 USDT、再买入 BTC 的全链路成本。">
+<meta name="theme-color" content="#F4F2ED">
+<meta name="description" content="比特币定投账本：准确记录人民币经 C2C 兑换稳定币、再买入 BTC 的全链路成本。">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="定投账本">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>定投账本 · ¥ → $ → ₿</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
-<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<title>BTC 定投账本 · 长期积累</title>
 <style>
 :root{
   /* 亮色 · Apple 中性灰阶 */
@@ -236,6 +232,164 @@ footer span{font-size:11.5px;color:var(--faint)}
   .chartbox{padding:14px 12px 16px}
   .ledger{padding:18px 16px 6px}
 }
+/* ── 2026 精修：暖灰画布、黑金主卡、原生底部表单 ── */
+:root{
+  --bg:#F4F2ED; --panel:#FFFFFF; --fill:#F1EFEA; --fill2:#E8E5DE;
+  --line:#E5E1D8; --line-soft:#F0EDE7;
+  --text:#171716; --dim:#706E68; --faint:#A5A198;
+  --btc:#C96D09; --btc-vivid:#F58A12; --accent:#171716; --on-accent:#FFFFFF;
+  --header:rgba(244,242,237,.82);
+  --card:0 1px 1px rgba(35,29,20,.035),0 12px 36px rgba(35,29,20,.055);
+  --lift:0 20px 70px rgba(20,17,12,.18),0 2px 10px rgba(20,17,12,.08);
+  --r:24px;
+}
+html[data-theme="dark"]{
+  --bg:#0D0E0F; --panel:#171819; --fill:#222324; --fill2:#2C2D2F;
+  --line:#303133; --line-soft:#232426;
+  --text:#F5F3EE; --dim:#A6A39D; --faint:#6E6C68;
+  --header:rgba(13,14,15,.82); --accent:#F5F3EE; --on-accent:#121212;
+  --card:0 1px 0 rgba(255,255,255,.035),0 18px 48px rgba(0,0,0,.18);
+}
+html{background:var(--bg);color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(900px 420px at 50% -220px,rgba(247,147,30,.11),transparent 70%),
+    var(--bg);
+  padding-bottom:calc(52px + env(safe-area-inset-bottom));
+}
+body.sheet-open{overflow:hidden}
+.wrap{max-width:760px;padding:0 20px}
+.card{border:1px solid rgba(65,54,36,.045)}
+html[data-theme="dark"] .card{border-color:rgba(255,255,255,.045)}
+
+header{background:var(--header)}
+.hbar{height:62px;gap:8px}
+.brand-lockup{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:var(--text);color:var(--bg);font-family:var(--mono);font-size:15px;font-weight:700;box-shadow:0 5px 14px rgba(20,17,12,.12)}
+.brand-copy{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.brand{font-size:14.5px;font-weight:650}
+.brand-copy small{font-size:10px;color:var(--faint);margin-top:4px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.iconbtn{width:38px;height:38px;border-radius:12px}
+
+.hero{padding-top:16px}
+.hold{
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:28px 26px 24px;border:none;
+  background:
+    radial-gradient(520px 240px at 95% -15%,rgba(247,147,30,.27),transparent 62%),
+    linear-gradient(155deg,#1A1B1C 0%,#101112 100%);
+  color:#F8F6F1;box-shadow:0 24px 70px rgba(22,19,14,.16),inset 0 1px 0 rgba(255,255,255,.06);
+}
+html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%,rgba(247,147,30,.22),transparent 62%),linear-gradient(155deg,#1B1C1D,#111213);border-color:rgba(255,255,255,.06)}
+.hold::after{content:"₿";position:absolute;right:-25px;top:5px;z-index:-1;font-family:var(--mono);font-size:210px;font-weight:800;line-height:1;color:rgba(255,255,255,.022);transform:rotate(8deg);pointer-events:none}
+.hold .lbl{color:rgba(255,255,255,.52)}
+.hold-head{align-items:flex-start}
+.hero-kicker{display:flex;flex-direction:column;gap:5px}
+.hero-kicker .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.hero-kicker small{font-size:12px;color:rgba(255,255,255,.42)}
+.seg.hero-base{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.06)}
+.seg.hero-base button{color:rgba(255,255,255,.55)}
+.seg.hero-base button[aria-pressed="true"]{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
+.hold-btc{color:#fff;font-size:clamp(42px,12.5vw,64px);margin-top:24px;letter-spacing:-.055em}
+.hold-fiat{color:rgba(255,255,255,.52);margin-top:13px}
+.hold-fiat span{color:rgba(255,255,255,.9)}
+.hold-row{grid-template-columns:repeat(4,1fr);gap:0;margin-top:28px;padding:16px 0 1px;border-top:1px solid rgba(255,255,255,.09)}
+.hold-row>div{padding:0 14px;border-left:1px solid rgba(255,255,255,.08);min-width:0}
+.hold-row>div:first-child{padding-left:0;border-left:0}
+.hold-row>div:last-child{padding-right:0}
+.hold-row b{font-size:15px;margin-top:6px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hold-row .up{color:#FF766E}.hold-row .down{color:#45D68F}
+.hold-tick{margin-top:20px;padding-top:16px;border-color:rgba(255,255,255,.09)}
+.ht-l .lbl{margin-bottom:5px}.ht-l b{font-size:19px;color:#fff}.ht-r>span:first-child{font-size:12px}
+.status{color:rgba(255,255,255,.42)}
+
+.toolbar{margin:18px 2px 14px}
+.actionbar{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:8px 9px 8px 14px;box-shadow:0 8px 28px rgba(35,29,20,.04)}
+.actionbar .cadence{line-height:1.35}
+.btn{border-radius:12px;padding:10px 15px;background:var(--fill);font-weight:550}
+.btn.primary{background:var(--text);color:var(--bg);box-shadow:0 7px 18px rgba(22,19,14,.12)}
+.btn.primary.add{display:inline-flex;align-items:center;gap:7px;background:var(--btc-vivid);color:#211200;box-shadow:0 8px 20px rgba(247,147,30,.2)}
+.btn.primary.add svg{width:15px;height:15px}
+
+.chartbox{padding:22px 20px 18px}
+.charttop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:15px}
+.section-title{margin:0;font-size:18px;font-weight:650;letter-spacing:-.03em}
+.section-sub{font-size:11.5px;color:var(--faint);margin-top:4px}
+.chartbox .seg{flex:none}
+.chartbox .seg button{padding:7px 11px;font-size:11.5px}
+.chartwrap{height:230px;margin:0 -3px}
+.legend{padding-top:13px;border-top:1px solid var(--line-soft);margin-top:13px;gap:16px}
+
+.ledger{padding:23px 20px 10px}
+.ledger-top,.records-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.ledger-top{margin-bottom:22px}
+.records-top{margin-top:20px;padding-top:20px;border-top:1px solid var(--line-soft);margin-bottom:8px}
+.records-count{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.balance-chip{font-family:var(--mono);font-size:11px;color:var(--usdt);background:color-mix(in srgb,var(--usdt) 9%,transparent);padding:6px 9px;border-radius:9px}
+.balance-chip.warn{color:var(--red);background:color-mix(in srgb,var(--red) 9%,transparent)}
+.chain{padding:0 2px 18px}.node .cur{font-size:11px}.node .amt{font-size:15px}
+.chainfoot{padding:15px 2px 2px;border-top:1px solid var(--line-soft);border-bottom:0}
+.baseline-record{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0 15px;border-bottom:1px solid var(--line-soft)}
+.baseline-record>span{display:flex;flex-direction:column;gap:3px}.baseline-record>span:last-child{text-align:right}
+.baseline-record b{font-size:12px;font-weight:600}.baseline-record small{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
+.row .r{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 录入改为原生感底部面板，主页面不再被表单推开 */
+.entry-backdrop{position:fixed;inset:0;z-index:54;background:rgba(14,13,11,.42);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;pointer-events:none;transition:opacity .22s}
+.entry-backdrop.open{opacity:1;pointer-events:auto}
+.form{display:block;position:fixed;z-index:55;left:50%;bottom:14px;transform:translate(-50%,calc(100% + 40px));width:min(620px,calc(100vw - 24px));max-height:min(88vh,760px);overflow:auto;margin:0;padding:24px;border-radius:26px;box-shadow:var(--lift);opacity:0;visibility:hidden;transition:transform .34s cubic-bezier(.22,.9,.3,1),opacity .2s,visibility 0s linear .34s}
+.form.open{display:block;transform:translate(-50%,0);opacity:1;visibility:visible;animation:none;transition:transform .34s cubic-bezier(.22,.9,.3,1),opacity .2s}
+.form-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.form h3{margin:0;font-size:21px}.form-head p{font-size:12px;color:var(--faint);margin:4px 0 0}
+.closebtn{width:34px;height:34px;border-radius:11px;background:var(--fill);display:grid;place-items:center;color:var(--dim);font-size:19px;line-height:1}
+.entry-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:var(--fill);padding:4px;border-radius:13px;margin-bottom:22px}
+.entry-modes button{padding:8px 4px;border-radius:10px;color:var(--dim);font-size:12px;font-weight:550}
+.entry-modes button[aria-pressed="true"]{background:var(--panel);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.09)}
+.stable-switch{display:inline-grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--fill);padding:3px;border-radius:10px}
+.stable-switch button{padding:6px 11px;border-radius:8px;color:var(--dim);font-family:var(--mono);font-size:11px}
+.stable-switch button[aria-pressed="true"]{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.available{font-family:var(--mono);font-size:11px;color:var(--faint);text-align:right;margin-top:-3px}
+.form[data-mode="stable"] .g-btc,.form[data-mode="btc"] .g-cny{display:none}
+.form[data-mode="btc"] .full-only,.form[data-mode="stable"] .full-only{display:none}
+.form .gt{display:flex;align-items:center;justify-content:space-between}
+
+.modal{align-items:flex-end;padding:12px}
+.sheet{border-radius:26px;max-width:440px;padding:26px 23px 20px;margin-bottom:max(0px,env(safe-area-inset-bottom));}
+.baseline-box{background:var(--fill);border-radius:16px;padding:15px;margin:4px 0 10px}
+.baseline-box h4{font-size:13px;margin:0 0 5px}.baseline-box p{font-size:11.5px;color:var(--faint);margin:0 0 13px;line-height:1.55}
+.baseline-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.baseline-grid label{font-size:10.5px;color:var(--dim)}
+.baseline-grid input{display:block;width:100%;margin-top:6px;background:var(--panel);border:1px solid transparent;border-radius:10px;padding:10px;font-family:var(--mono);font-size:13px;color:var(--text)}
+.baseline-grid .wide{grid-column:1/-1}
+
+@media(max-width:680px){
+  .wrap{padding:0 14px}
+  .brand-copy small{display:none}
+  .hold{padding:24px 20px 21px;border-radius:22px}
+  .hold::after{font-size:170px;right:-38px;top:28px}
+  .hold-row{grid-template-columns:1fr 1fr;row-gap:17px}
+  .hold-row>div{border-left:0;padding:0}
+  .hold-row>div:nth-child(even){padding-left:15px;border-left:1px solid rgba(255,255,255,.08)}
+  .hold-row b{font-size:15px}
+  .actionbar{margin-top:14px;gap:7px;padding-left:12px}
+  .actionbar .cadence{font-size:11.5px;max-width:118px}
+  .actionbar .btn{font-size:12px;padding:9px 11px}
+  .chartbox{padding:20px 15px 16px}
+  .charttop{display:block}.charttop .seg{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;width:100%}.charttop .seg button{padding:7px 5px}
+  .chartwrap{height:218px}
+  .ledger{padding:20px 16px 8px}
+  .chain{gap:10px}.node:not(:last-child)::after{right:-6px}
+  .chainfoot{display:grid;grid-template-columns:1fr 1fr}.chainfoot span:last-child{text-align:right}
+  .form{bottom:0;width:100vw;max-height:92vh;border-radius:26px 26px 0 0;padding:22px 18px calc(18px + env(safe-area-inset-bottom))}
+  .grp{gap:13px 11px}.f input{padding:12px 12px;font-size:15px}
+  .factions{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--panel) 18px);padding-top:24px;padding-bottom:calc(4px + env(safe-area-inset-bottom));margin-top:12px}
+  .form .factions .btn.primary{min-width:104px}
+  .modal{padding:0}.sheet{max-width:none;border-radius:26px 26px 0 0;margin:0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .row{border-top:1px solid var(--line-soft);border-radius:0;margin:0;padding:15px 0;width:100%;grid-template-columns:1fr auto}
+  .row:first-of-type{border-top:0}.row .mini{font-size:12px}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -243,7 +397,10 @@ footer span{font-size:11.5px;color:var(--faint)}
 
 <header id="hdr">
   <div class="wrap hbar">
-    <div class="brand">定投账本 <b>₿</b></div>
+    <div class="brand-lockup">
+      <span class="brand-mark">₿</span>
+      <span class="brand-copy"><span class="brand">BTC 定投账本</span><small>ACCUMULATION LEDGER</small></span>
+    </div>
     <div class="spacer"></div>
     <div class="mini-px" id="miniPx"><b id="mPx">—</b><i id="mVs" class="flat">—</i></div>
     <button class="iconbtn" id="btnTheme" title="切换深浅主题" aria-label="切换深浅主题">
@@ -261,8 +418,8 @@ footer span{font-size:11.5px;color:var(--faint)}
   <section class="hero">
     <div class="card hold">
       <div class="hold-head">
-        <span class="lbl">当前持仓</span>
-        <div class="seg sm" role="group" aria-label="记账本位">
+        <span class="hero-kicker"><span class="lbl">我的比特币</span><small>长期积累，而不是短期猜价</small></span>
+        <div class="seg sm hero-base" role="group" aria-label="记账本位">
           <button type="button" id="baseCny" aria-pressed="true">¥ 人民币</button>
           <button type="button" id="baseUsdt" aria-pressed="false">$ 美元</button>
         </div>
@@ -271,9 +428,10 @@ footer span{font-size:11.5px;color:var(--faint)}
       <div class="hold-fiat" id="holdFiat">还没有记录</div>
 
       <div class="hold-row">
+        <div><span class="lbl">BTC 总成本</span><b class="flat" id="sInvest">—</b></div>
+        <div><span class="lbl">持仓均价</span><b class="flat" id="sAvgCost">—</b></div>
         <div><span class="lbl" id="lPnl">浮动盈亏</span><b class="flat" id="sPnl">—</b></div>
         <div><span class="lbl">收益率</span><b class="flat" id="sRoi">—</b></div>
-        <div><span class="lbl" id="lIrr">年化 IRR</span><b class="flat" id="sIrr">—</b></div>
       </div>
 
       <div class="hold-tick" id="tick" title="点击刷新行情">
@@ -290,25 +448,42 @@ footer span{font-size:11.5px;color:var(--faint)}
     </div>
   </section>
 
-  <div class="toolbar">
+  <div class="toolbar actionbar">
     <span class="cadence" id="cadence"></span>
     <div class="spacer"></div>
-    <button class="btn" id="btnData">数据</button>
-    <button class="btn primary" id="btnAdd">＋ 记一笔</button>
+    <button class="btn" id="btnData">备份</button>
+    <button class="btn primary add" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>记一笔</button>
   </div>
 
+  <div class="entry-backdrop" id="entryBackdrop"></div>
   <form class="card form" id="form">
-    <h3 id="formTitle">记一笔定投</h3>
+    <div class="form-head">
+      <div><h3 id="formTitle">记一笔定投</h3><p>按真实到账填写，手续费会自然计入成本</p></div>
+      <button type="button" class="closebtn" id="fClose" aria-label="关闭">×</button>
+    </div>
+    <div class="entry-modes" role="group" aria-label="记录类型">
+      <button type="button" id="modeFull" aria-pressed="true">完整定投</button>
+      <button type="button" id="modeBtc" aria-pressed="false">余额买币</button>
+      <button type="button" id="modeStable" aria-pressed="false">只换稳定币</button>
+    </div>
     <div class="fchain">
+      <div class="f wide">
+        <label>结算币种 <em>USDT / USDC 分开记余额</em></label>
+        <div class="stable-switch" role="group" aria-label="稳定币">
+          <button type="button" id="stableUsdt" aria-pressed="true">USDT</button>
+          <button type="button" id="stableUsdc" aria-pressed="false">USDC</button>
+        </div>
+      </div>
+      <div class="f wide"><label for="fDate">日期</label><input type="date" id="fDate" required></div>
       <div class="grp g-cny">
-        <div class="gt">第一段 · C2C 买 USDT</div>
-        <div class="f wide"><label for="fDate">日期</label><input type="date" id="fDate" required></div>
+        <div class="gt"><span>第一段 · C2C 买稳定币</span></div>
         <div class="f"><label for="fCny">人民币投入 <em>¥</em></label><input type="text" inputmode="decimal" id="fCny" placeholder="2000" required></div>
         <div class="f"><label for="fRate">C2C 单价 <em id="emRate">¥/USDT</em></label><input type="text" inputmode="decimal" id="fRate" placeholder="7.28"></div>
-        <div class="f"><label for="fUsdt">实收 USDT <em id="emUsdt">到账数量</em></label><input type="text" inputmode="decimal" id="fUsdt" placeholder="填了就反推汇率"></div>
+        <div class="f"><label for="fUsdt">实收稳定币 <em id="emUsdt">到账数量</em></label><input type="text" inputmode="decimal" id="fUsdt" placeholder="填了就反推汇率"></div>
       </div>
       <div class="grp g-btc">
-        <div class="gt">第二段 · USDT 买 BTC</div>
+        <div class="gt"><span>第二段 · 稳定币买 BTC</span><span class="available" id="fAvail">可用 —</span></div>
+        <div class="f"><label for="fSpent">实际支付稳定币 <em id="emSpent">用于买币</em></label><input type="text" inputmode="decimal" id="fSpent" placeholder="默认全部使用"></div>
         <div class="f"><label for="fPrice">BTC 成交价 <em id="emPrice">USDT</em></label><input type="text" inputmode="decimal" id="fPrice" placeholder="填市价"></div>
         <div class="f"><label for="fBtc">实收 BTC <em id="emBtc">到账数量</em></label><input type="text" inputmode="decimal" id="fBtc" placeholder="填了就反推成交价"></div>
       </div>
@@ -323,7 +498,8 @@ footer span{font-size:11.5px;color:var(--faint)}
   </form>
 
   <section class="card chartbox">
-    <div class="toolbar" style="margin:0 0 10px">
+    <div class="charttop">
+      <div><h2 class="section-title">积累轨迹</h2><div class="section-sub">看清数量、成本与买入节奏</div></div>
       <div class="seg" role="group" aria-label="图表视图">
         <button id="tabStack" aria-pressed="true">累计 BTC</button>
         <button id="tabCost" aria-pressed="false">成本 / 市值</button>
@@ -336,17 +512,22 @@ footer span{font-size:11.5px;color:var(--faint)}
   </section>
 
   <section class="card ledger">
+    <div class="ledger-top">
+      <div><h2 class="section-title">资金路径</h2><div class="section-sub">人民币如何变成你的比特币</div></div>
+      <span class="balance-chip" id="hStableLeft">余额 —</span>
+    </div>
     <div class="chain">
       <div class="node n-cny"><div class="cur"><i></i>投入人民币</div><div class="amt" id="hCny">¥0</div></div>
-      <div class="node n-usdt"><div class="cur"><i></i>换到 USDT</div><div class="amt" id="hUsdt">$0</div></div>
+      <div class="node n-usdt"><div class="cur"><i></i>换到稳定币</div><div class="amt" id="hUsdt">$0</div></div>
       <div class="node n-btc"><div class="cur"><i></i>买到 BTC</div><div class="amt" id="hBtc">₿0</div></div>
     </div>
     <div class="chainfoot">
       <span id="hRate"><em>C2C 均价</em> —</span>
       <span id="hCost"><em>持仓均价</em> —</span>
     </div>
+    <div class="records-top"><div><h2 class="section-title">定投记录</h2><div class="section-sub">点击任意一笔即可编辑</div></div><span class="records-count" id="recordsCount">0 笔</span></div>
     <div class="lhead">
-      <span>日期</span><span>人民币</span><span>C2C 价</span><span>USDT</span><span>成交价</span><span>BTC</span><span>较现价</span>
+      <span>日期</span><span>类型</span><span>人民币</span><span>稳定币</span><span>有效成本</span><span>BTC</span><span>较现价</span>
     </div>
     <div id="rows"></div>
   </section>
@@ -354,9 +535,18 @@ footer span{font-size:11.5px;color:var(--faint)}
 
 <footer><span>¥ → $ → ₿ · 数据只存在这台设备</span></footer>
 
-<div class="modal" id="mSettings">
+<div class="modal" id="mSettings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
   <div class="sheet">
-    <h3>设置</h3>
+    <h3 id="settingsTitle">设置</h3>
+    <div class="baseline-box">
+      <h4>已有持仓基线</h4>
+      <p>如果开始记账前已经持有 BTC，只填当前数量与累计人民币成本；新定投会在这个基础上继续计算。</p>
+      <div class="baseline-grid">
+        <label>已有 BTC<input type="text" inputmode="decimal" id="setBaseBtc" placeholder="0.35000000"></label>
+        <label>累计人民币成本<input type="text" inputmode="decimal" id="setBaseCny" placeholder="130000"></label>
+        <label class="wide">基线日期<input type="date" id="setBaseDate"></label>
+      </div>
+    </div>
     <div class="srow">
       <div class="k">当前汇率<small id="setFxSrc">USD/CNY，仅用于人民币本位估值</small></div>
       <input type="text" inputmode="decimal" id="setFx" placeholder="自动">
@@ -373,9 +563,9 @@ footer span{font-size:11.5px;color:var(--faint)}
   </div>
 </div>
 
-<div class="modal" id="mData">
+<div class="modal" id="mData" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
   <div class="sheet">
-    <h3>数据</h3>
+    <h3 id="dataTitle">备份与恢复</h3>
     <p class="bstate" id="bState">—</p>
     <div class="dgrid">
       <button class="btn primary" id="dExport">导出备份</button>
@@ -398,793 +588,1435 @@ footer span{font-size:11.5px;color:var(--faint)}
 <script>
 "use strict";
 
-/* ═══════════ 存储 ═══════════
-   Claude 环境用 window.storage；GitHub Pages 等自托管场景回退 localStorage。 */
+/* BTC 定投账本 v2
+   核心口径：稳定币先进入独立库存，买 BTC 时再按移动平均成本分摊人民币成本。
+   因此未使用的 USDT / USDC 不会被误算进 BTC 持仓成本。 */
+
 const KEY = "btc-dca-ledger";
-const store = {
-  async load(){
-    try{
-      if (window.storage){ const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : null; }
-      const raw = window.localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null;
-    }catch(e){ return null; }
-  },
-  async save(o){
-    try{
-      const s = JSON.stringify(o);
-      if (window.storage){ await window.storage.set(KEY, s); return true; }
-      window.localStorage.setItem(KEY, s); return true;
-    }catch(e){ return false; }
-  }
+const DAY = 864e5;
+const DEFAULT_SETTINGS = {
+  fx: 7.25,
+  base: "CNY",
+  manualPx: null,
+  manualFx: null,
+  redUp: true,
+  theme: "light",
+  lastBackup: null,
+  baselineBtc: 0,
+  baselineCny: 0,
+  baselineDate: "",
+  lastPx: null,
+  lastPxAt: null,
+  lastPxSource: null,
 };
 
-/* ═══════════ 状态 ═══════════ */
-let state = { records: [], settings: { fx: 7.25, base: "CNY", manualPx: null, manualFx: null, redUp: true, theme: "light", lastBackup: null } };
-let price = { v: null, chg: null, src: "—", live: false };
+const store = {
+  async load() {
+    try {
+      if (window.storage) {
+        const result = await window.storage.get(KEY);
+        return result ? JSON.parse(result.value) : null;
+      }
+      const raw = window.localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  },
+  async save(value) {
+    try {
+      const text = JSON.stringify(value);
+      if (window.storage) {
+        await window.storage.set(KEY, text);
+        return true;
+      }
+      window.localStorage.setItem(KEY, text);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  },
+};
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const strictNumber = (value) => {
+  const text = String(value ?? "").replace(/[\s,¥$₮₿]/g, "");
+  if (!text || !/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(text)) return NaN;
+  const valueNumber = Number(text);
+  return Number.isFinite(valueNumber) ? valueNumber : NaN;
+};
+const positive = (value) => {
+  const parsed = typeof value === "number" ? value : strictNumber(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+const validDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) && Number.isFinite(new Date(`${value}T12:00:00`).getTime());
+const today = () => {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
+const dateMs = (value) => new Date(`${value}T12:00:00`).getTime();
+const esc = (value) => String(value ?? "").replace(/[<>&"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[char]));
+
+const fmt = (value, digits = 2) => !Number.isFinite(value)
+  ? "—"
+  : value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const fmtK = (value) => {
+  if (!Number.isFinite(value)) return "—";
+  const amount = Math.abs(value);
+  if (amount >= 1e8) return `${(value / 1e8).toFixed(2)}亿`;
+  if (amount >= 1e4) return `${(value / 1e4).toFixed(amount >= 1e6 ? 1 : 2)}万`;
+  return fmt(value, amount < 100 ? 2 : 0);
+};
+const cny = (value) => `¥${fmtK(value)}`;
+const usd = (value) => `$${fmtK(value)}`;
+const pct = (value) => Number.isFinite(value) ? `${value >= 0 ? "+" : ""}${(value * 100).toFixed(2)}%` : "—";
+const sats = (value) => Math.round(value * 1e8).toLocaleString("en-US");
+const btcText = (value, digits = 8) => Number.isFinite(value) ? value.toFixed(digits) : "0.00000000";
+
+let state = { version: 2, records: [], settings: { ...DEFAULT_SETTINGS } };
+let price = { v: null, chg: null, src: "—", live: false, at: null };
 let fxInfo = { src: "默认值", live: false };
-let editingId = null, chartTab = "stack", collapsed = {}, hoverX = null;
+let editingId = null;
+let chartTab = "stack";
+let collapsed = {};
+let hoverX = null;
+let entryMode = "full";
+let stableAsset = "USDT";
+let undoFn = null;
+let toastTimer = null;
 
-const $ = s => document.querySelector(s);
-const num = v => { const n = parseFloat(String(v).replace(/[,\s¥$₮₿]/g,"")); return isFinite(n) ? n : NaN; };
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-const DAY = 864e5;
-
-/* ═══════════ 格式 ═══════════ */
-const fmt = (n,d=2) => !isFinite(n) ? "—" : n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtK = n => { if(!isFinite(n)) return "—"; const a=Math.abs(n);
-  if (a>=1e8) return (n/1e8).toFixed(2)+"亿";
-  if (a>=1e4) return (n/1e4).toFixed(a>=1e6?1:2)+"万";
-  return fmt(n, a<100?2:0); };
-const cny  = n => "¥"+fmtK(n);
-const usdt = n => "$"+fmtK(n);
-const pct  = n => isFinite(n) ? (n>=0?"+":"")+(n*100).toFixed(2)+"%" : "—";
-const sats = n => Math.round(n*1e8).toLocaleString("en-US");
-
-/* ═══════════ 汇总 ═══════════ */
-function calc(){
-  const r = state.records.slice().sort((a,b)=> a.date<b.date ? -1 : 1);
-  const s = { n:r.length, cny:0, usdt:0, btc:0, list:r };
-  r.forEach(x=>{ s.cny+=x.cny; s.usdt+=x.usdt; s.btc+=x.btc; });
-  s.avgRate = s.usdt ? s.cny/s.usdt : NaN;
-  s.costU   = s.btc  ? s.usdt/s.btc : NaN;
-  s.costC   = s.btc  ? s.cny /s.btc : NaN;
-  s.px   = price.v;
-  s.valU = isFinite(s.px) ? s.btc*s.px : NaN;
-  s.valC = isFinite(s.valU) ? s.valU*state.settings.fx : NaN;
-  s.pnlU = s.valU - s.usdt;  s.pnlC = s.valC - s.cny;
-  s.roiU = s.usdt ? s.pnlU/s.usdt : NaN;
-  s.roiC = s.cny  ? s.pnlC/s.cny  : NaN;
-  s.irr  = irr(r, s);
-  return s;
-}
-function irr(r, s){
-  if (!r.length || !isFinite(s.valU)) return NaN;
-  const useCny = state.settings.base === "CNY";
-  const f = r.map(x=>({ t:new Date(x.date).getTime(), v:-(useCny?x.cny:x.usdt) }));
-  f.push({ t:Date.now(), v: useCny ? s.valC : s.valU });
-  const t0=f[0].t, Y=365.25*DAY;
-  const npv = k => f.reduce((a,x)=> a + x.v/Math.pow(1+k,(x.t-t0)/Y), 0);
-  let lo=-0.9999, hi=20;
-  if (npv(lo)*npv(hi) > 0) return NaN;
-  for (let i=0;i<160;i++){ const m=(lo+hi)/2; if (npv(m)>0) lo=m; else hi=m; }
-  const o=(lo+hi)/2; return Math.abs(o)>19 ? NaN : o;
+function sortRecords(records) {
+  return records.slice().sort((a, b) =>
+    a.date.localeCompare(b.date) || (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id))
+  );
 }
 
-/* ═══════════ 渲染 ═══════════ */
-function render(){
-  const s = calc(), isCny = state.settings.base === "CNY";
-  const cs = getComputedStyle(document.documentElement);
-  const RED = cs.getPropertyValue("--red").trim(), GREEN = cs.getPropertyValue("--green").trim();
-  document.documentElement.style.setProperty("--up",   state.settings.redUp ? RED : GREEN);
-  document.documentElement.style.setProperty("--down", state.settings.redUp ? GREEN : RED);
+function normalizeSettings(raw = {}) {
+  const settings = { ...DEFAULT_SETTINGS, ...raw };
+  settings.fx = positive(settings.fx) || DEFAULT_SETTINGS.fx;
+  settings.base = settings.base === "USDT" ? "USDT" : "CNY";
+  settings.manualPx = positive(settings.manualPx) || null;
+  settings.manualFx = positive(settings.manualFx) || null;
+  settings.redUp = settings.redUp !== false;
+  settings.theme = settings.theme === "dark" ? "dark" : "light";
+  settings.baselineBtc = positive(settings.baselineBtc);
+  settings.baselineCny = positive(settings.baselineCny);
+  settings.baselineDate = validDate(settings.baselineDate) ? settings.baselineDate : "";
+  settings.lastPx = positive(settings.lastPx) || null;
+  return settings;
+}
 
-  /* 主卡：持仓为唯一主角 */
-  $("#holdBtc").textContent = "₿" + (s.btc ? s.btc.toFixed(6) : "0");
-  $("#holdFiat").innerHTML = s.n
-    ? (isFinite(s.valU)
-        ? `<span>${usdt(s.valU)}</span> · <span>${cny(s.valC)}</span> &nbsp;汇率 <span>${state.settings.fx}</span>${fxInfo.live ? "" : " ⚠"}`
-        : `<span>${sats(s.btc)}</span> sats · 等待行情`)
-    : "还没有记录";
+function normalizeRecords(rawRecords = []) {
+  const seen = new Set();
+  const result = [];
+  rawRecords.forEach((raw, index) => {
+    if (!raw || !validDate(raw.date)) return;
+    const cnyPaid = positive(raw.cny ?? raw.cnyPaid);
+    const received = positive(raw.usdt ?? raw.received ?? raw.stableReceived);
+    const btc = positive(raw.btc ?? raw.btcReceived);
+    const stable = raw.stable === "USDC" ? "USDC" : "USDT";
+    let spent = positive(raw.spent ?? raw.stableSpent);
+    if (!spent && btc && raw.spent == null && raw.stableSpent == null) spent = received;
+    let rate = positive(raw.rate);
+    let quotePrice = positive(raw.price ?? raw.quotePrice);
+    if (!rate && cnyPaid && received) rate = cnyPaid / received;
+    if (!quotePrice && spent && btc) quotePrice = spent / btc;
 
-  /* 链路：钱怎么走到币的上下文 */
-  $("#hCny").textContent  = cny(s.cny);
-  $("#hUsdt").textContent = usdt(s.usdt);
-  $("#hBtc").textContent  = "₿" + (s.btc ? s.btc.toFixed(6) : "0");
-  $("#hRate").innerHTML = `<em>C2C 均价</em> ${isFinite(s.avgRate) ? "¥"+s.avgRate.toFixed(4) : "—"}`;
-  $("#hCost").innerHTML = `<em>持仓均价</em> ${isFinite(s.costU) ? (isCny ? "¥"+fmtK(s.costC) : "$"+fmt(s.costU,0)) : "—"}`;
+    const hasC2C = cnyPaid > 0 || received > 0;
+    const hasBtc = spent > 0 || btc > 0;
+    if (!hasC2C && !hasBtc) return;
+    if (hasC2C && !(cnyPaid > 0 && received > 0 && rate > 0)) return;
+    if (hasBtc && !(spent > 0 && btc > 0 && quotePrice > 0)) return;
 
-  const pnl = isCny?s.pnlC:s.pnlU, roi = isCny?s.roiC:s.roiU;
-  const eP=$("#sPnl"), eR=$("#sRoi"), eI=$("#sIrr");
-  eP.textContent = isFinite(pnl) ? (pnl>=0?"+":"−")+(isCny?"¥":"$")+fmtK(Math.abs(pnl)) : "—";
-  eR.textContent = pct(roi);
-  eI.textContent = pct(s.irr);
-  [[eP,pnl],[eR,roi],[eI,s.irr]].forEach(([el,v])=> el.className = "num " + (!isFinite(v)?"flat":v>=0?"up":"down"));
-  $("#lPnl").textContent = isCny ? "浮动盈亏 · ¥" : "浮动盈亏 · $";
-  $("#lIrr").textContent = isCny ? "年化 IRR · ¥" : "年化 IRR · $";
+    let id = String(raw.id || uid());
+    if (seen.has(id)) id = uid();
+    seen.add(id);
+    result.push({
+      id,
+      date: raw.date,
+      createdAt: Number.isFinite(Number(raw.createdAt)) ? Number(raw.createdAt) : index,
+      stable,
+      cny: cnyPaid,
+      rate,
+      usdt: received,
+      spent,
+      price: quotePrice,
+      btc,
+      note: String(raw.note || "").slice(0, 180),
+    });
+  });
+  return sortRecords(result);
+}
 
-  const vs = $("#pxVs"), mv = $("#mVs");
-  if (isFinite(s.costU) && isFinite(s.px)){
-    const d = (s.px - s.costU)/s.costU, k = d>=0 ? "up" : "down";
-    vs.textContent = pct(d)+" 较均价"; vs.className = "num "+k;
-    mv.textContent = pct(d); mv.className = k;
+function migrate(saved) {
+  if (!saved || typeof saved !== "object") return { version: 2, records: [], settings: { ...DEFAULT_SETTINGS } };
+  return {
+    version: 2,
+    records: normalizeRecords(Array.isArray(saved.records) ? saved.records : []),
+    settings: normalizeSettings(saved.settings || {}),
+  };
+}
+
+function calc(records = state.records, settings = state.settings) {
+  const list = sortRecords(records);
+  const inventory = {
+    USDT: { qty: 0, costCny: 0, bought: 0, spent: 0 },
+    USDC: { qty: 0, costCny: 0, bought: 0, spent: 0 },
+  };
+  const invalid = [];
+  const enriched = [];
+  let totalNewCny = 0;
+  let totalReceived = 0;
+  let totalSpent = 0;
+  let btc = positive(settings.baselineBtc);
+  let btcCostCny = positive(settings.baselineCny);
+  let btcCostUsd = settings.fx > 0 ? btcCostCny / settings.fx : 0;
+
+  for (const record of list) {
+    const bag = inventory[record.stable];
+    if (record.cny > 0 && record.usdt > 0) {
+      bag.qty += record.usdt;
+      bag.costCny += record.cny;
+      bag.bought += record.usdt;
+      totalNewCny += record.cny;
+      totalReceived += record.usdt;
+    }
+
+    let allocatedCny = 0;
+    let deficit = 0;
+    if (record.spent > 0) {
+      const averageInventoryCost = bag.qty > 0 ? bag.costCny / bag.qty : 0;
+      const covered = Math.min(record.spent, Math.max(0, bag.qty));
+      allocatedCny = covered * averageInventoryCost;
+      deficit = Math.max(0, record.spent - bag.qty);
+      if (deficit > 1e-7) {
+        invalid.push({ id: record.id, stable: record.stable, deficit });
+        allocatedCny += deficit * (record.rate || settings.fx);
+      }
+      bag.qty = Math.max(0, bag.qty - record.spent);
+      bag.costCny = Math.max(0, bag.costCny - covered * averageInventoryCost);
+      bag.spent += record.spent;
+      totalSpent += record.spent;
+      btc += record.btc;
+      btcCostCny += allocatedCny;
+      btcCostUsd += record.spent;
+    }
+
+    enriched.push({
+      ...record,
+      allocatedCny,
+      deficit,
+      balanceAfter: bag.qty,
+      effectiveCny: record.btc > 0 ? allocatedCny / record.btc : NaN,
+      effectiveUsd: record.btc > 0 ? record.spent / record.btc : NaN,
+    });
+  }
+
+  const stableQty = inventory.USDT.qty + inventory.USDC.qty;
+  const stableCostCny = inventory.USDT.costCny + inventory.USDC.costCny;
+  const totalCny = positive(settings.baselineCny) + totalNewCny;
+  const px = price.v;
+  const valUsd = Number.isFinite(px) ? btc * px : NaN;
+  const valCny = Number.isFinite(valUsd) ? valUsd * settings.fx : NaN;
+  const pnlCny = valCny - btcCostCny;
+  const pnlUsd = valUsd - btcCostUsd;
+  const stableValueCny = stableQty * settings.fx;
+
+  return {
+    n: list.length,
+    list: enriched,
+    buys: enriched.filter((record) => record.btc > 0),
+    invalid,
+    inventory,
+    totalNewCny,
+    totalCny,
+    totalReceived,
+    totalSpent,
+    avgRate: totalReceived > 0 ? totalNewCny / totalReceived : NaN,
+    btc,
+    btcCostCny,
+    btcCostUsd,
+    costCny: btc > 0 ? btcCostCny / btc : NaN,
+    costUsd: btc > 0 ? btcCostUsd / btc : NaN,
+    px,
+    valUsd,
+    valCny,
+    pnlCny,
+    pnlUsd,
+    roiCny: btcCostCny > 0 ? pnlCny / btcCostCny : NaN,
+    roiUsd: btcCostUsd > 0 ? pnlUsd / btcCostUsd : NaN,
+    stableQty,
+    stableCostCny,
+    stableValueCny,
+    portfolioCostCny: totalCny,
+    portfolioValueCny: valCny + stableValueCny,
+  };
+}
+
+function setSignedClass(element, value) {
+  element.className = `num ${!Number.isFinite(value) ? "flat" : value >= 0 ? "up" : "down"}`;
+}
+
+function render() {
+  const summary = calc();
+  const isCny = state.settings.base === "CNY";
+  const computed = getComputedStyle(document.documentElement);
+  const red = computed.getPropertyValue("--red").trim();
+  const green = computed.getPropertyValue("--green").trim();
+  document.documentElement.style.setProperty("--up", state.settings.redUp ? red : green);
+  document.documentElement.style.setProperty("--down", state.settings.redUp ? green : red);
+
+  $("#holdBtc").textContent = `₿${btcText(summary.btc)}`;
+  $("#holdFiat").innerHTML = summary.btc > 0
+    ? Number.isFinite(summary.valUsd)
+      ? `<span>${usd(summary.valUsd)}</span> · <span>${cny(summary.valCny)}</span>${summary.stableQty > 0 ? ` &nbsp;另有 <span>${fmt(summary.stableQty, 2)}</span> 稳定币` : ""}`
+      : `<span>${sats(summary.btc)}</span> sats · 等待行情`
+    : "还没有 BTC 持仓";
+
+  const invest = isCny ? summary.btcCostCny : summary.btcCostUsd;
+  const average = isCny ? summary.costCny : summary.costUsd;
+  const pnl = invest > 0 ? (isCny ? summary.pnlCny : summary.pnlUsd) : NaN;
+  const roi = isCny ? summary.roiCny : summary.roiUsd;
+  $("#sInvest").textContent = Number.isFinite(invest) && invest > 0 ? (isCny ? cny(invest) : usd(invest)) : "—";
+  $("#sAvgCost").textContent = Number.isFinite(average) && average > 0 ? `${isCny ? "¥" : "$"}${fmtK(average)}` : "—";
+  $("#sPnl").textContent = Number.isFinite(pnl) ? `${pnl >= 0 ? "+" : "−"}${isCny ? "¥" : "$"}${fmtK(Math.abs(pnl))}` : "—";
+  $("#sRoi").textContent = pct(roi);
+  setSignedClass($("#sPnl"), pnl);
+  setSignedClass($("#sRoi"), roi);
+  $("#lPnl").textContent = `浮动盈亏 · ${isCny ? "¥" : "$"}`;
+
+  $("#hCny").textContent = cny(summary.totalCny);
+  const boughtParts = ["USDT", "USDC"].filter((asset) => summary.inventory[asset].bought > 0)
+    .map((asset) => `${asset} ${fmt(summary.inventory[asset].bought, 2)}`);
+  $("#hUsdt").textContent = boughtParts.length ? boughtParts.join(" · ") : "$0";
+  $("#hBtc").textContent = `₿${btcText(summary.btc, 6)}`;
+  $("#hRate").innerHTML = `<em>C2C 均价</em> ${Number.isFinite(summary.avgRate) ? `¥${summary.avgRate.toFixed(4)}` : "—"}`;
+  $("#hCost").innerHTML = `<em>持仓均价</em> ${Number.isFinite(average) ? `${isCny ? "¥" : "$"}${fmtK(average)}` : "—"}`;
+  const balances = ["USDT", "USDC"].filter((asset) => summary.inventory[asset].qty > 1e-7)
+    .map((asset) => `${asset} ${fmt(summary.inventory[asset].qty, 2)}`);
+  $("#hStableLeft").textContent = summary.invalid.length ? "⚠ 余额逻辑异常" : balances.length ? `余额 ${balances.join(" · ")}` : "稳定币已用完";
+  $("#hStableLeft").classList.toggle("warn", summary.invalid.length > 0);
+  $("#hStableLeft").title = summary.invalid.length ? "存在稳定币余额不足的历史记录，请检查导入数据" : "未使用稳定币不会计入 BTC 成本";
+  $("#recordsCount").textContent = `${summary.n} 笔`;
+
+  const currentComparable = isCny && Number.isFinite(summary.px) ? summary.px * state.settings.fx : summary.px;
+  if (Number.isFinite(currentComparable) && Number.isFinite(average) && average > 0) {
+    const difference = (currentComparable - average) / average;
+    const key = difference >= 0 ? "up" : "down";
+    $("#pxVs").textContent = `${pct(difference)} 较均价`;
+    $("#pxVs").className = `num ${key}`;
+    $("#mVs").textContent = pct(difference);
+    $("#mVs").className = key;
   } else {
-    vs.textContent = "—"; vs.className = "num flat";
-    mv.textContent = "—"; mv.className = "flat";
+    $("#pxVs").textContent = "—";
+    $("#pxVs").className = "num flat";
+    $("#mVs").textContent = "—";
+    $("#mVs").className = "flat";
   }
-  $("#mPx").textContent = price.v ? fmt(price.v,0) : "—";
+  $("#mPx").textContent = price.v ? fmt(price.v, 0) : "—";
 
-  renderCadence(s);
-  renderRows(s);
-  drawChart(s);
+  renderCadence(summary);
+  renderRows(summary);
+  drawChart(summary);
 }
 
-function renderCadence(s){
-  const el = $("#cadence");
-  if (!s.n){ el.textContent = ""; el.className = "cadence"; return; }
-  const last = new Date(s.list[s.list.length-1].date).getTime();
-  const since = Math.max(0, Math.floor((Date.now()-last)/DAY));
-  let gap = "";
-  if (s.n > 1){
-    const span = (last - new Date(s.list[0].date).getTime())/DAY;
-    gap = ` · 平均间隔 ${Math.round(span/(s.n-1))} 天`;
-  }
-  el.textContent = `距上次定投 ${since} 天${gap}`;
-  el.className = "cadence" + (since >= 32 ? " due" : "");
-  el.innerHTML = el.textContent.replace(/(\d+) 天/, "<b>$1 天</b>");
-}
-
-function renderRows(s){
-  const box = $("#rows");
-  if (!s.n){
-    box.innerHTML = `<div class="empty">
-      <h4>还没有记录</h4>
-      <p>每一笔定投都是一条链：人民币换成稳定币，稳定币买入比特币。两段都记下来，成本才算得清。</p>
-      <button type="button" class="btn primary" id="emptyAdd">记第一笔</button>
-    </div>`;
-    $("#emptyAdd").addEventListener("click", ()=> openForm(null));
+function renderCadence(summary) {
+  const element = $("#cadence");
+  const buys = summary.buys;
+  if (!buys.length) {
+    element.textContent = state.settings.baselineBtc > 0 ? "从下一笔开始记录定投节奏" : "准备好就记下第一笔";
+    element.className = "cadence";
     return;
   }
+  const last = dateMs(buys[buys.length - 1].date);
+  const since = Math.max(0, Math.floor((Date.now() - last) / DAY));
+  let gap = "";
+  if (buys.length > 1) {
+    const span = (last - dateMs(buys[0].date)) / DAY;
+    gap = ` · 均隔 ${Math.round(span / (buys.length - 1))} 天`;
+  }
+  element.textContent = `距上次 ${since} 天${gap}`;
+  element.className = `cadence${since >= 32 ? " due" : ""}`;
+  element.innerHTML = element.textContent.replace(/(\d+) 天/, "<b>$1 天</b>");
+}
+
+function recordKind(record) {
+  if (record.cny > 0 && record.btc > 0) return "完整定投";
+  if (record.btc > 0) return "余额买币";
+  return "换稳定币";
+}
+
+function renderRows(summary) {
+  const box = $("#rows");
+  if (!summary.n) {
+    box.innerHTML = `<div class="empty"><h4>${state.settings.baselineBtc > 0 ? "已有持仓已纳入" : "从第一笔开始"}</h4><p>${state.settings.baselineBtc > 0 ? "基线成本已参与均价计算。以后每次 C2C 和 BTC 实际到账都在这里记录。" : "先把人民币换成稳定币，再记录实际买到的 BTC；未用完的稳定币会留在余额里。"}</p><button type="button" class="btn primary" id="emptyAdd">记第一笔</button></div>`;
+    $("#emptyAdd").addEventListener("click", () => openForm(null));
+    return;
+  }
+
   const years = {};
-  s.list.slice().reverse().forEach(r => { (years[r.date.slice(0,4)] ||= []).push(r); });
+  summary.list.slice().reverse().forEach((record) => ((years[record.date.slice(0, 4)] ||= []).push(record)));
   let html = "";
-  for (const y of Object.keys(years).sort().reverse()){
-    const rs = years[y], open = !collapsed[y];
-    const yc = rs.reduce((a,x)=>a+x.cny,0), yb = rs.reduce((a,x)=>a+x.btc,0);
-    html += `<button type="button" class="yr" data-yr="${y}" aria-expanded="${open}">
-      <span class="y"><span class="cv">▾</span>${y}</span>
-      <span class="s">${rs.length} 笔 · ${cny(yc)} · ₿${yb.toFixed(6)}</span></button>`;
+  if (state.settings.baselineBtc > 0) {
+    html += `<div class="baseline-record"><span><b>历史持仓基线</b><small>${esc(state.settings.baselineDate || "未设日期")}</small></span><span><b>₿${btcText(state.settings.baselineBtc, 6)}</b><small>${cny(state.settings.baselineCny)} 成本</small></span></div>`;
+  }
+  for (const year of Object.keys(years).sort().reverse()) {
+    const records = years[year];
+    const open = !collapsed[year];
+    const yearCny = records.reduce((sum, record) => sum + record.cny, 0);
+    const yearBtc = records.reduce((sum, record) => sum + record.btc, 0);
+    html += `<button type="button" class="yr" data-yr="${year}" aria-expanded="${open}"><span class="y"><span class="cv">▾</span>${year}</span><span class="s">${records.length} 笔 · ${cny(yearCny)} · ₿${btcText(yearBtc, 6)}</span></button>`;
     if (!open) continue;
-    for (const r of rs){
-      const p = isFinite(s.px) ? (s.px-r.price)/r.price : NaN;
-      const k = !isFinite(p) ? "flat" : p>=0 ? "up" : "down";
-      html += `<button type="button" class="row" data-id="${r.id}">
-        <span class="d">${r.date.slice(2)}</span>
-        <span class="r c-cny hide-m">¥${fmt(r.cny,0)}</span>
-        <span class="r hide-m" style="color:var(--dim)">${r.rate.toFixed(3)}</span>
-        <span class="r c-usdt hide-m">${fmt(r.usdt,2)}</span>
-        <span class="r hide-m" style="color:var(--dim)">${fmt(r.price,0)}</span>
-        <span class="r c-btc hide-m">${r.btc.toFixed(6)}</span>
-        <span class="r pnl ${k}">${pct(p)}</span>
-        <span class="mini"><span class="c-cny">¥${fmt(r.cny,0)}</span> <span style="color:var(--faint)">→</span> <span class="c-usdt">${fmt(r.usdt,2)}$</span> <span style="color:var(--faint)">→</span> <span class="c-btc">₿${r.btc.toFixed(6)}</span><br><span style="color:var(--faint)">C2C ${r.rate.toFixed(3)} · BTC ${fmt(r.price,0)}${r.note ? " · "+esc(r.note) : ""}</span></span>
+    for (const record of records) {
+      const isCny = state.settings.base === "CNY";
+      const effective = isCny ? record.effectiveCny : record.effectiveUsd;
+      const current = Number.isFinite(price.v) ? (isCny ? price.v * state.settings.fx : price.v) : NaN;
+      const comparison = Number.isFinite(effective) && effective > 0 && Number.isFinite(current) ? current / effective - 1 : NaN;
+      const comparisonClass = !Number.isFinite(comparison) ? "flat" : comparison >= 0 ? "up" : "down";
+      const kind = recordKind(record);
+      const stableFlow = record.usdt > 0 && record.spent > 0
+        ? `+${fmt(record.usdt, 2)} / −${fmt(record.spent, 2)} ${record.stable}`
+        : record.usdt > 0 ? `+${fmt(record.usdt, 2)} ${record.stable}` : `−${fmt(record.spent, 2)} ${record.stable}`;
+      const mobileFlow = record.cny > 0 && record.btc > 0
+        ? `<span class="c-cny">¥${fmt(record.cny, 0)}</span> <span style="color:var(--faint)">→</span> <span class="c-usdt">${fmt(record.usdt, 2)} ${record.stable}</span> <span style="color:var(--faint)">→</span> <span class="c-btc">₿${btcText(record.btc, 6)}</span>`
+        : record.btc > 0
+          ? `<span class="c-usdt">${fmt(record.spent, 2)} ${record.stable}</span> <span style="color:var(--faint)">→</span> <span class="c-btc">₿${btcText(record.btc, 6)}</span>`
+          : `<span class="c-cny">¥${fmt(record.cny, 0)}</span> <span style="color:var(--faint)">→</span> <span class="c-usdt">${fmt(record.usdt, 2)} ${record.stable}</span>`;
+      html += `<button type="button" class="row" data-id="${esc(record.id)}">
+        <span class="d">${record.date.slice(2)}</span>
+        <span class="r hide-m" style="color:var(--dim)">${kind}</span>
+        <span class="r c-cny hide-m">${record.cny > 0 ? `¥${fmt(record.cny, 0)}` : "—"}</span>
+        <span class="r c-usdt hide-m">${stableFlow}</span>
+        <span class="r hide-m" style="color:var(--dim)">${Number.isFinite(effective) ? `${isCny ? "¥" : "$"}${fmtK(effective)}` : "—"}</span>
+        <span class="r c-btc hide-m">${record.btc > 0 ? btcText(record.btc, 6) : "—"}</span>
+        <span class="r pnl ${comparisonClass}">${pct(comparison)}</span>
+        <span class="mini">${mobileFlow}<br><span style="color:var(--faint)">${kind}${Number.isFinite(effective) ? ` · 有效成本 ${isCny ? "¥" : "$"}${fmtK(effective)}` : ""}${record.note ? ` · ${esc(record.note)}` : ""}</span></span>
       </button>`;
     }
   }
   box.innerHTML = html;
 }
-const esc = t => String(t).replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
 
-/* ═══════════ 图表 ═══════════ */
-const cv = $("#cv"), ctx = cv.getContext("2d");
+/* ── 图表 ── */
+const canvas = $("#cv");
+const ctx = canvas.getContext("2d");
 let marks = [];
 
-function drawChart(s){
-  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
-  if (!W || !H) return;
-  cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,H);
-  const cs = getComputedStyle(document.documentElement), C = k => cs.getPropertyValue(k).trim();
-  const padR = W < 420 ? 42 : 52;
-  const x0 = 4, x1 = W - padR, y0 = 14, y1 = H - 20;
+function chartStart(summary) {
+  const dates = summary.list.map((record) => record.date);
+  if (state.settings.baselineBtc > 0 && state.settings.baselineDate) dates.push(state.settings.baselineDate);
+  return dates.sort()[0] || today();
+}
+
+function drawChart(summary) {
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (!width || !height) return;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const css = getComputedStyle(document.documentElement);
+  const color = (name) => css.getPropertyValue(name).trim();
+  const rightPad = width < 420 ? 43 : 54;
+  const x0 = 4;
+  const x1 = width - rightPad;
+  const y0 = 14;
+  const y1 = height - 22;
   marks = [];
 
-  if (!s.n || (!isFinite(s.px) && chartTab !== "stack")){
-    ctx.fillStyle = C("--faint"); ctx.font = "11px "+C("--mono"); ctx.textAlign = "center";
-    ctx.fillText(s.n ? "等待 BTC 行情" : "记录后显示图表", W/2, H/2);
-    $("#legend").innerHTML = ""; $("#chartNote").textContent = ""; return;
+  const hasHoldings = summary.btc > 0;
+  if (!hasHoldings || (chartTab !== "stack" && !Number.isFinite(summary.px))) {
+    ctx.fillStyle = color("--faint");
+    ctx.font = `11px ${color("--mono")}`;
+    ctx.textAlign = "center";
+    ctx.fillText(hasHoldings ? "等待 BTC 行情" : "记录后显示图表", width / 2, height / 2);
+    $("#legend").innerHTML = "";
+    $("#chartNote").textContent = "";
+    canvas.setAttribute("aria-label", hasHoldings ? "等待 BTC 行情" : "暂无定投图表数据");
+    return;
   }
 
-  const isCny = state.settings.base === "CNY", K = isCny ? state.settings.fx : 1, U = isCny ? "¥" : "$";
-  const t0 = new Date(s.list[0].date).getTime(), tN = Date.now();
-  const span = Math.max(tN - t0, DAY);
-  const X = t => x0 + (t-t0)/span*(x1-x0);
-  const grid = (lo,hi,f) => {
-    ctx.font = "10px "+C("--mono"); ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    for (let i=0;i<=3;i++){
-      const v = lo+(hi-lo)*i/3, y = y1-(i/3)*(y1-y0);
-      ctx.strokeStyle = C("--line-soft"); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x0,y+.5); ctx.lineTo(x1,y+.5); ctx.stroke();
-      ctx.fillStyle = C("--faint"); ctx.fillText(f(v), x1+7, y);
+  const isCny = state.settings.base === "CNY";
+  const unit = isCny ? "¥" : "$";
+  const start = chartStart(summary);
+  const startTime = dateMs(start);
+  const nowTime = Math.max(Date.now(), startTime + DAY);
+  const span = Math.max(nowTime - startTime, DAY);
+  const X = (time) => x0 + ((time - startTime) / span) * (x1 - x0);
+  const grid = (low, high, formatter) => {
+    ctx.font = `10px ${color("--mono")}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    for (let i = 0; i <= 3; i += 1) {
+      const value = low + ((high - low) * i) / 3;
+      const y = y1 - (i / 3) * (y1 - y0);
+      ctx.strokeStyle = color("--line-soft");
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x0, y + 0.5);
+      ctx.lineTo(x1, y + 0.5);
+      ctx.stroke();
+      ctx.fillStyle = color("--faint");
+      ctx.fillText(formatter(value), x1 + 7, y);
     }
   };
-  const axisX = () => {
-    ctx.font = "10px "+C("--mono"); ctx.fillStyle = C("--faint"); ctx.textBaseline = "top";
-    ctx.textAlign = "left";  ctx.fillText(s.list[0].date.slice(2,7), x0, y1+6);
-    ctx.textAlign = "right"; ctx.fillText("现在", x1, y1+6);
+  const drawXAxis = () => {
+    ctx.font = `10px ${color("--mono")}`;
+    ctx.fillStyle = color("--faint");
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    ctx.fillText(start.slice(2, 7), x0, y1 + 7);
+    ctx.textAlign = "right";
+    ctx.fillText("现在", x1, y1 + 7);
   };
 
-  if (chartTab === "stack"){
-    let cb = 0; const pts = [];
-    for (const r of s.list){
-      const t = new Date(r.date).getTime();
-      pts.push([t,cb]); cb += r.btc; pts.push([t,cb]);
-      marks.push({ x:X(t), v:cb, t, title:r.date,
-        lines:[["本笔","₿"+r.btc.toFixed(6)],["累计","₿"+cb.toFixed(6)],["占比",((r.btc/s.btc)*100).toFixed(1)+"%"]] });
+  if (chartTab === "stack") {
+    let cumulative = positive(state.settings.baselineBtc);
+    const points = [[startTime, cumulative]];
+    if (cumulative > 0) {
+      marks.push({ x: X(startTime), t: startTime, v: cumulative, title: "历史基线", lines: [["数量", `₿${btcText(cumulative, 6)}`], ["成本", cny(state.settings.baselineCny)]] });
     }
-    pts.push([tN,cb]);
-    const hi = cb*1.12, Y = v => y1 - v/(hi||1)*(y1-y0);
-    marks.forEach(m => m.y = Y(m.v));
-    grid(0, hi, v => {
-      if (v >= 10)  return "₿"+v.toFixed(1);
-      if (v >= 0.1) return "₿"+v.toFixed(2);
-      if (v >= 0.01) return "₿"+v.toFixed(3);
-      return "₿"+v.toFixed(4);
-    });
-
-    const g = ctx.createLinearGradient(0,y0,0,y1);
-    g.addColorStop(0, C("--btc-vivid")+"44"); g.addColorStop(1, C("--btc-vivid")+"03");
-    ctx.beginPath(); ctx.moveTo(X(pts[0][0]), y1);
-    pts.forEach(p=> ctx.lineTo(X(p[0]),Y(p[1]))); ctx.lineTo(X(tN),y1); ctx.closePath();
-    ctx.fillStyle = g; ctx.fill();
-    ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
-    ctx.strokeStyle = C("--btc-vivid"); ctx.lineWidth = 2; ctx.stroke();
-    marks.forEach(m=>{ ctx.beginPath(); ctx.arc(m.x,m.y,2.4,0,7); ctx.fillStyle=C("--btc-vivid"); ctx.fill(); });
-    axisX();
-
-    const days = Math.max(1,(tN-t0)/DAY), mo = days/30.44;
-    $("#legend").innerHTML =
-      `<span class="lg"><s style="background:${C("--btc-vivid")}"></s>累计 ₿${cb.toFixed(8)}</span>
-       <span class="lg">${sats(cb)} sats</span>
-       <span class="lg">单笔均 ₿${(cb/s.n).toFixed(6)}</span>`;
-    $("#chartNote").textContent = `${mo.toFixed(1)} 个月 ${s.n} 笔，平均每月攒 ₿${(cb/mo).toFixed(6)}。这条线只由买入行为决定，与币价无关——定投里唯一完全可控的变量。`;
-  }
-
-  else if (chartTab === "cost"){
-    let cum = 0, cb = 0; const inv = [], val = [];
-    for (const r of s.list){
-      const t = new Date(r.date).getTime();
-      inv.push([t,cum]); cb += r.btc; cum += isCny ? r.cny : r.usdt; inv.push([t,cum]);
-      const v = cb*r.price*K;
-      val.push([t,v]);
-      marks.push({ x:X(t), v, t, title:r.date,
-        lines:[["投入",U+fmtK(cum)],["市值",U+fmtK(v)],["盈亏",pct(v/cum-1)]] });
+    for (const record of summary.buys) {
+      const time = dateMs(record.date);
+      points.push([time, cumulative]);
+      cumulative += record.btc;
+      points.push([time, cumulative]);
+      marks.push({
+        x: X(time), t: time, v: cumulative, title: record.date,
+        lines: [["本笔", `₿${btcText(record.btc, 6)}`], ["累计", `₿${btcText(cumulative, 6)}`], ["占比", `${((record.btc / summary.btc) * 100).toFixed(1)}%`]],
+      });
     }
-    inv.push([tN,cum]);
-    const vNow = s.btc*s.px*K; val.push([tN,vNow]);
-    marks.push({ x:X(tN), v:vNow, t:tN, title:"现在",
-      lines:[["投入",U+fmtK(cum)],["市值",U+fmtK(vNow)],["盈亏",pct(vNow/cum-1)]] });
-    const hi = Math.max(...inv.concat(val).map(p=>p[1]))*1.1;
-    const Y = v => y1 - v/(hi||1)*(y1-y0);
-    marks.forEach(m => m.y = Y(m.v));
-    grid(0, hi, v => U+fmtK(v));
+    points.push([nowTime, cumulative]);
+    const high = Math.max(cumulative * 1.14, 0.00000001);
+    const Y = (value) => y1 - (value / high) * (y1 - y0);
+    marks.forEach((mark) => { mark.y = Y(mark.v); });
+    grid(0, high, (value) => value >= 0.1 ? `₿${value.toFixed(2)}` : value >= 0.01 ? `₿${value.toFixed(3)}` : `₿${value.toFixed(4)}`);
 
-    const col = vNow >= cum ? C("--up") : C("--down");
-    const g = ctx.createLinearGradient(0,y0,0,y1);
-    g.addColorStop(0, col+"36"); g.addColorStop(1, col+"02");
-    ctx.beginPath(); ctx.moveTo(X(val[0][0]),Y(val[0][1]));
-    val.forEach(p=>ctx.lineTo(X(p[0]),Y(p[1]))); ctx.lineTo(X(tN),y1); ctx.lineTo(X(val[0][0]),y1);
-    ctx.closePath(); ctx.fillStyle = g; ctx.fill();
-
-    ctx.beginPath(); inv.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
-    ctx.strokeStyle = C("--dim"); ctx.lineWidth = 1.4; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); val.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));
-    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke();
-    ctx.beginPath(); ctx.arc(X(tN),Y(vNow),3.4,0,7); ctx.fillStyle = col; ctx.fill();
-    axisX();
-    $("#legend").innerHTML =
-      `<span class="lg"><s style="background:${C("--dim")}"></s>累计投入</span>
-       <span class="lg"><s style="background:${col}"></s>持仓市值</span>`;
-    $("#chartNote").textContent = "市值按每笔买入当日价与当前价采样，两点间为直线连接，不是逐日真实走势。";
-  }
-
-  else {
-    const arr = s.list.map(r=>r.price*K).concat([s.px*K, s.costU*K]);
-    const hi = Math.max(...arr)*1.08, lo = Math.min(...arr)*0.92;
-    const Y = v => y1 - (v-lo)/(hi-lo||1)*(y1-y0);
-    grid(lo, hi, v => U+fmtK(v));
-    const maxA = Math.max(...s.list.map(r=>r.cny));
-    ctx.beginPath(); ctx.moveTo(x0,Y(s.costU*K)); ctx.lineTo(x1,Y(s.costU*K));
-    ctx.strokeStyle = C("--btc-vivid"); ctx.lineWidth = 1.4; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]);
-    const col = s.px >= s.costU ? C("--up") : C("--down");
-    ctx.beginPath(); ctx.moveTo(x0,Y(s.px*K)); ctx.lineTo(x1,Y(s.px*K));
-    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke();
-    s.list.forEach(r=>{
-      const t = new Date(r.date).getTime(), rad = 2.6+3.4*Math.sqrt(r.cny/maxA);
-      const x = X(t), y = Y(r.price*K);
-      ctx.beginPath(); ctx.arc(x,y,rad,0,7);
-      ctx.fillStyle = C("--btc-vivid") + (r.price<=s.costU ? "E6" : "50"); ctx.fill();
-      ctx.strokeStyle = C("--panel"); ctx.lineWidth = 1.2; ctx.stroke();
-      marks.push({ x, y, v:r.price*K, t, title:r.date,
-        lines:[["成交价",U+fmtK(r.price*K)],["投入","¥"+fmt(r.cny,0)],["买到","₿"+r.btc.toFixed(6)]] });
+    const gradient = ctx.createLinearGradient(0, y0, 0, y1);
+    gradient.addColorStop(0, `${color("--btc-vivid")}42`);
+    gradient.addColorStop(1, `${color("--btc-vivid")}02`);
+    ctx.beginPath();
+    ctx.moveTo(X(points[0][0]), y1);
+    points.forEach((point) => ctx.lineTo(X(point[0]), Y(point[1])));
+    ctx.lineTo(X(nowTime), y1);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.beginPath();
+    points.forEach((point, index) => index ? ctx.lineTo(X(point[0]), Y(point[1])) : ctx.moveTo(X(point[0]), Y(point[1])));
+    ctx.strokeStyle = color("--btc-vivid");
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    marks.forEach((mark) => {
+      ctx.beginPath();
+      ctx.arc(mark.x, mark.y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = color("--btc-vivid");
+      ctx.fill();
     });
-    axisX();
-    const below = s.list.filter(r=>r.price<=s.costU).length;
-    $("#legend").innerHTML =
-      `<span class="lg"><s style="background:${C("--btc-vivid")}"></s>单笔成交（面积＝投入额）</span>
-       <span class="lg"><s style="background:${C("--btc-vivid")};opacity:.55"></s>持仓均价 ${U+fmtK(s.costU*K)}</span>
-       <span class="lg"><s style="background:${col}"></s>当前价</span>`;
-    $("#chartNote").textContent = `${below}/${s.n} 笔买在均价之下（实心点），这部分决定了均价被拉低多少。`;
+    drawXAxis();
+
+    const months = Math.max(1, (nowTime - startTime) / DAY) / 30.44;
+    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--btc-vivid")}"></s>累计 ₿${btcText(summary.btc)}</span><span class="lg">${sats(summary.btc)} sats</span><span class="lg">${summary.buys.length} 笔买入</span>`;
+    $("#chartNote").textContent = `约 ${months.toFixed(1)} 个月，平均每月积累 ₿${btcText(summary.btc / months, 6)}。数量曲线只由你的买入行为决定。`;
+    canvas.setAttribute("aria-label", `累计持有 ${btcText(summary.btc)} BTC，共 ${summary.buys.length} 笔买入`);
+  } else if (chartTab === "cost") {
+    let cumulativeBtc = positive(state.settings.baselineBtc);
+    let cumulativeCost = positive(state.settings.baselineCny);
+    if (!isCny && state.settings.fx > 0) cumulativeCost /= state.settings.fx;
+    const invested = [[startTime, cumulativeCost]];
+    const value = [[startTime, cumulativeCost]];
+    for (const record of summary.buys) {
+      const time = dateMs(record.date);
+      const addCost = isCny ? record.allocatedCny : record.spent;
+      invested.push([time, cumulativeCost]);
+      cumulativeBtc += record.btc;
+      cumulativeCost += addCost;
+      invested.push([time, cumulativeCost]);
+      const pointPrice = record.price * (isCny ? (record.rate || state.settings.fx) : 1);
+      const pointValue = cumulativeBtc * pointPrice;
+      value.push([time, pointValue]);
+      marks.push({ x: X(time), t: time, v: pointValue, title: record.date, lines: [["BTC 成本", `${unit}${fmtK(cumulativeCost)}`], ["买入时估值", `${unit}${fmtK(pointValue)}`], ["本笔", `₿${btcText(record.btc, 6)}`]] });
+    }
+    invested.push([nowTime, cumulativeCost]);
+    const currentValue = isCny ? summary.valCny : summary.valUsd;
+    value.push([nowTime, currentValue]);
+    marks.push({ x: X(nowTime), t: nowTime, v: currentValue, title: "现在", lines: [["BTC 成本", `${unit}${fmtK(cumulativeCost)}`], ["当前市值", `${unit}${fmtK(currentValue)}`], ["盈亏", pct(currentValue / cumulativeCost - 1)]] });
+    const high = Math.max(...invested.concat(value).map((point) => point[1]), 1) * 1.12;
+    const Y = (point) => y1 - (point / high) * (y1 - y0);
+    marks.forEach((mark) => { mark.y = Y(mark.v); });
+    grid(0, high, (point) => `${unit}${fmtK(point)}`);
+
+    const trendColor = currentValue >= cumulativeCost ? color("--up") : color("--down");
+    const gradient = ctx.createLinearGradient(0, y0, 0, y1);
+    gradient.addColorStop(0, `${trendColor}32`);
+    gradient.addColorStop(1, `${trendColor}02`);
+    ctx.beginPath();
+    value.forEach((point, index) => index ? ctx.lineTo(X(point[0]), Y(point[1])) : ctx.moveTo(X(point[0]), Y(point[1])));
+    ctx.lineTo(X(nowTime), y1);
+    ctx.lineTo(X(value[0][0]), y1);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.beginPath();
+    invested.forEach((point, index) => index ? ctx.lineTo(X(point[0]), Y(point[1])) : ctx.moveTo(X(point[0]), Y(point[1])));
+    ctx.strokeStyle = color("--dim");
+    ctx.lineWidth = 1.3;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    value.forEach((point, index) => index ? ctx.lineTo(X(point[0]), Y(point[1])) : ctx.moveTo(X(point[0]), Y(point[1])));
+    ctx.strokeStyle = trendColor;
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(X(nowTime), Y(currentValue), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = trendColor;
+    ctx.fill();
+    drawXAxis();
+    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--dim")}"></s>BTC 成本</span><span class="lg"><s style="background:${trendColor}"></s>持仓估值</span>`;
+    $("#chartNote").textContent = "历史估值只在买入时点采样；当前端点使用实时行情。稳定币余额不计入这张 BTC 图。";
+    canvas.setAttribute("aria-label", `BTC 成本 ${unit}${fmtK(cumulativeCost)}，当前市值 ${unit}${fmtK(currentValue)}`);
+  } else {
+    if (!summary.buys.length) {
+      ctx.fillStyle = color("--faint");
+      ctx.font = `11px ${color("--mono")}`;
+      ctx.textAlign = "center";
+      ctx.fillText("新增一笔买入后显示分布", width / 2, height / 2);
+      $("#legend").innerHTML = "";
+      $("#chartNote").textContent = "历史持仓基线只有总成本，没有逐笔买入价，因此不会伪造为买入点。";
+      return;
+    }
+    const effective = summary.buys.map((record) => isCny ? record.effectiveCny : record.effectiveUsd).filter(Number.isFinite);
+    const current = isCny ? summary.px * state.settings.fx : summary.px;
+    const average = isCny ? summary.costCny : summary.costUsd;
+    const all = effective.concat([current, average]);
+    const minRaw = Math.min(...all);
+    const maxRaw = Math.max(...all);
+    const padding = Math.max((maxRaw - minRaw) * 0.12, maxRaw * 0.035, 1);
+    const low = Math.max(0, minRaw - padding);
+    const high = maxRaw + padding;
+    const Y = (point) => y1 - ((point - low) / (high - low || 1)) * (y1 - y0);
+    grid(low, high, (point) => `${unit}${fmtK(point)}`);
+    const maxAmount = Math.max(...summary.buys.map((record) => record.allocatedCny || record.spent), 1);
+    ctx.beginPath();
+    ctx.moveTo(x0, Y(average));
+    ctx.lineTo(x1, Y(average));
+    ctx.strokeStyle = color("--btc-vivid");
+    ctx.lineWidth = 1.3;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const currentColor = current >= average ? color("--up") : color("--down");
+    ctx.beginPath();
+    ctx.moveTo(x0, Y(current));
+    ctx.lineTo(x1, Y(current));
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    summary.buys.forEach((record) => {
+      const time = dateMs(record.date);
+      const point = isCny ? record.effectiveCny : record.effectiveUsd;
+      const radius = 2.8 + 3.6 * Math.sqrt((record.allocatedCny || record.spent) / maxAmount);
+      const x = X(time);
+      const y = Y(point);
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = `${color("--btc-vivid")}${point <= average ? "E8" : "58"}`;
+      ctx.fill();
+      ctx.strokeStyle = color("--panel");
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      marks.push({ x, y, t: time, v: point, title: record.date, lines: [["有效成本", `${unit}${fmtK(point)}`], ["投入", cny(record.allocatedCny)], ["买到", `₿${btcText(record.btc, 6)}`]] });
+    });
+    drawXAxis();
+    const below = effective.filter((point) => point <= average).length;
+    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--btc-vivid")}"></s>单笔买入（面积＝成本）</span><span class="lg"><s style="background:${color("--btc-vivid")};opacity:.55"></s>持仓均价 ${unit}${fmtK(average)}</span><span class="lg"><s style="background:${currentColor}"></s>当前价</span>`;
+    $("#chartNote").textContent = `${below}/${summary.buys.length} 笔低于当前综合均价；人民币视图使用每笔实际分摊成本，不再用当前汇率倒推历史成本。`;
+    canvas.setAttribute("aria-label", `${summary.buys.length} 笔 BTC 买入成本分布，综合均价 ${unit}${fmtK(average)}`);
   }
 
-  drawHover(C, y0, y1, W);
+  drawHover(color, y0, y1, width);
 }
 
-function drawHover(C, y0, y1, W){
+function drawHover(color, y0, y1, width) {
   if (hoverX == null || !marks.length) return;
-  let m = marks[0];
-  for (const k of marks) if (Math.abs(k.x-hoverX) < Math.abs(m.x-hoverX)) m = k;
-  if (Math.abs(m.x-hoverX) > 60) return;
+  let mark = marks[0];
+  for (const candidate of marks) {
+    if (Math.abs(candidate.x - hoverX) < Math.abs(mark.x - hoverX)) mark = candidate;
+  }
+  if (Math.abs(mark.x - hoverX) > 60) return;
+  ctx.strokeStyle = color("--faint");
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 3]);
+  ctx.beginPath();
+  ctx.moveTo(mark.x, y0 - 8);
+  ctx.lineTo(mark.x, y1);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(mark.x, mark.y, 4.5, 0, Math.PI * 2);
+  ctx.fillStyle = color("--btc-vivid");
+  ctx.fill();
+  ctx.strokeStyle = color("--panel");
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  ctx.strokeStyle = C("--faint"); ctx.lineWidth = 1; ctx.setLineDash([2,3]);
-  ctx.beginPath(); ctx.moveTo(m.x, y0-8); ctx.lineTo(m.x, y1); ctx.stroke(); ctx.setLineDash([]);
-  ctx.beginPath(); ctx.arc(m.x, m.y, 4.5, 0, 7); ctx.fillStyle = C("--btc-vivid"); ctx.fill();
-  ctx.strokeStyle = C("--panel"); ctx.lineWidth = 2; ctx.stroke();
-
-  const mono = C("--mono");
-  ctx.font = "600 10px "+mono;
-  let w = ctx.measureText(m.title).width;
-  ctx.font = "10px "+mono;
-  m.lines.forEach(l => { w = Math.max(w, ctx.measureText(l[0]).width + ctx.measureText(l[1]).width + 16); });
-  const bw = w+18, bh = 20 + m.lines.length*14;
-  let bx = m.x + 12; if (bx + bw > W-2) bx = m.x - bw - 12; if (bx < 2) bx = 2;
-  let by = Math.min(Math.max(m.y - bh/2, 2), y1 - bh);
-
-  ctx.fillStyle = C("--panel"); ctx.strokeStyle = C("--line"); ctx.lineWidth = 1;
-  if (ctx.roundRect){ ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,8); ctx.fill(); ctx.stroke(); }
-  else { ctx.fillRect(bx,by,bw,bh); ctx.strokeRect(bx,by,bw,bh); }
-
-  ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  ctx.font = "600 10px "+mono; ctx.fillStyle = C("--text");
-  ctx.fillText(m.title, bx+9, by+13);
-  ctx.font = "10px "+mono;
-  m.lines.forEach((l,i)=>{
-    const y = by+29+i*14;
-    ctx.fillStyle = C("--faint"); ctx.textAlign = "left";  ctx.fillText(l[0], bx+9, y);
-    ctx.fillStyle = C("--text");  ctx.textAlign = "right"; ctx.fillText(l[1], bx+bw-9, y);
-  });
+  const mono = color("--mono");
+  ctx.font = `600 10px ${mono}`;
+  let textWidth = ctx.measureText(mark.title).width;
+  ctx.font = `10px ${mono}`;
+  mark.lines.forEach((line) => { textWidth = Math.max(textWidth, ctx.measureText(line[0]).width + ctx.measureText(line[1]).width + 16); });
+  const boxWidth = textWidth + 20;
+  const boxHeight = 21 + mark.lines.length * 14;
+  let boxX = mark.x + 12;
+  if (boxX + boxWidth > width - 2) boxX = mark.x - boxWidth - 12;
+  boxX = Math.max(2, boxX);
+  const boxY = Math.min(Math.max(mark.y - boxHeight / 2, 2), y1 - boxHeight);
+  ctx.fillStyle = color("--panel");
+  ctx.strokeStyle = color("--line");
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 9);
+  else ctx.rect(boxX, boxY, boxWidth, boxHeight);
+  ctx.fill();
+  ctx.stroke();
+  ctx.textBaseline = "middle";
   ctx.textAlign = "left";
+  ctx.font = `600 10px ${mono}`;
+  ctx.fillStyle = color("--text");
+  ctx.fillText(mark.title, boxX + 9, boxY + 13);
+  ctx.font = `10px ${mono}`;
+  mark.lines.forEach((line, index) => {
+    const y = boxY + 29 + index * 14;
+    ctx.fillStyle = color("--faint");
+    ctx.textAlign = "left";
+    ctx.fillText(line[0], boxX + 9, y);
+    ctx.fillStyle = color("--text");
+    ctx.textAlign = "right";
+    ctx.fillText(line[1], boxX + boxWidth - 9, y);
+  });
 }
 
-function pointerAt(e){
-  const r = cv.getBoundingClientRect();
-  hoverX = e.clientX - r.left;
+function pointerAt(event) {
+  const bounds = canvas.getBoundingClientRect();
+  hoverX = event.clientX - bounds.left;
   drawChart(calc());
 }
-cv.addEventListener("pointermove", e => { if (e.pointerType === "mouse" || e.buttons) pointerAt(e); });
-cv.addEventListener("pointerdown", pointerAt);
-["pointerleave","pointerup","pointercancel"].forEach(t =>
-  cv.addEventListener(t, ()=>{ hoverX = null; drawChart(calc()); }));
+canvas.addEventListener("pointermove", (event) => {
+  if (event.pointerType === "mouse" || event.buttons) pointerAt(event);
+});
+canvas.addEventListener("pointerdown", pointerAt);
+["pointerleave", "pointerup", "pointercancel"].forEach((eventName) => canvas.addEventListener(eventName, () => {
+  hoverX = null;
+  drawChart(calc());
+}));
+let resizeTimer;
+new ResizeObserver(() => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => drawChart(calc()), 80);
+}).observe($(".chartwrap"));
 
-let rt; new ResizeObserver(()=>{ clearTimeout(rt); rt = setTimeout(()=>drawChart(calc()), 60); }).observe($(".chartwrap"));
-
-/* ═══════════ 行情 ═══════════ */
-/* 价格与 24h 涨跌分开取：价格是关键数据，走最稳的轻量接口；
-   涨跌是锦上添花，单独异步补，拿不到就不显示，绝不拖累价格。 */
+/* ── 行情与汇率 ── */
 const PRICE_SOURCES = [
-  ["Binance","https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
-  ["Binance","https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT", d=>+d.price],
-  ["OKX","https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", d=>+d.data[0].last],
-  ["Coinbase","https://api.coinbase.com/v2/prices/BTC-USD/spot", d=>+d.data.amount],
-  ["CoinGecko","https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", d=>+d.bitcoin.usd],
+  ["Binance", "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", (data) => +data.price],
+  ["Binance", "https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT", (data) => +data.price],
+  ["OKX", "https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", (data) => +data.data[0].last],
+  ["Coinbase", "https://api.coinbase.com/v2/prices/BTC-USD/spot", (data) => +data.data.amount],
+  ["CoinGecko", "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", (data) => +data.bitcoin.usd],
 ];
-const CHG_SOURCES = [
-  ["https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", d=>+d.priceChangePercent/100],
-  ["https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT", d=>+d.priceChangePercent/100],
-  ["https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT",
-   d=>{ const t=d.data[0]; return +t.open24h>0 ? (+t.last)/(+t.open24h)-1 : NaN; }],
-  ["https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-   d=>+d.bitcoin.usd_24h_change/100],
+const CHANGE_SOURCES = [
+  ["https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", (data) => +data.priceChangePercent / 100],
+  ["https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT", (data) => +data.priceChangePercent / 100],
+  ["https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT", (data) => +data.data[0].open24h > 0 ? +data.data[0].last / +data.data[0].open24h - 1 : NaN],
+  ["https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true", (data) => +data.bitcoin.usd_24h_change / 100],
 ];
-
-async function grab(url, ms=5000){
-  const c = new AbortController(), tm = setTimeout(()=>c.abort(), ms);
-  try{
-    const res = await fetch(url, { signal:c.signal });
-    clearTimeout(tm);
-    if (!res.ok) return null;
-    return await res.json();
-  }catch(e){ clearTimeout(tm); return null; }
-}
-
-/* USD/CNY 官方汇率。注意：C2C 的稳定币报价通常带 0.5%~2% 溢价，
-   且无公开接口，这里取到的只作人民币本位估值用。 */
 const FX_SOURCES = [
-  ["Frankfurter","https://api.frankfurter.app/latest?from=USD&to=CNY", d=>+d.rates.CNY],
-  ["Currency-API","https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json", d=>+d.usd.cny],
-  ["Currency-API","https://latest.currency-api.pages.dev/v1/currencies/usd.json", d=>+d.usd.cny],
-  ["ER-API","https://open.er-api.com/v6/latest/USD", d=>+d.rates.CNY],
+  ["Frankfurter", "https://api.frankfurter.app/latest?from=USD&to=CNY", (data) => +data.rates.CNY],
+  ["Currency API", "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json", (data) => +data.usd.cny],
+  ["Currency API", "https://latest.currency-api.pages.dev/v1/currencies/usd.json", (data) => +data.usd.cny],
+  ["ER-API", "https://open.er-api.com/v6/latest/USD", (data) => +data.rates.CNY],
 ];
-let fxing = false;
-async function fetchFx(){
-  if (fxing) return; fxing = true;
-  if (state.settings.manualFx > 0){
-    state.settings.fx = state.settings.manualFx;
-    fxInfo = { src:"手动设定", live:false }; fxing = false; return;
+
+async function grab(url, timeout = 4800) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
-  for (const [name,url,pick] of FX_SOURCES){
-    const j = await grab(url, 5000); if (!j) continue;
-    let v; try{ v = pick(j); }catch(e){ continue; }
-    if (v > 3 && v < 20){
-      state.settings.fx = +v.toFixed(4);
-      fxInfo = { src:name, live:true };
-      await persist(); fxing = false; return;
-    }
-  }
-  if (!fxInfo.live) fxInfo = { src:"取不到，用上次的值", live:false };
-  fxing = false;
 }
 
-let fetching = false;
-async function fetchPrice(){
-  if (fetching) return; fetching = true;
-  $("#dot").classList.add("load");
-  if (isFinite(state.settings.manualPx) && state.settings.manualPx > 0){
-    price = { v: state.settings.manualPx, chg: null, src: "手动设定", live: false };
+async function firstValid(sources, validator, timeout) {
+  const tasks = sources.map(async ([name, url, pick]) => {
+    const data = await grab(url, timeout);
+    if (!data) throw new Error("unavailable");
+    let value;
+    try { value = pick(data); } catch (_) { throw new Error("bad payload"); }
+    if (!validator(value)) throw new Error("invalid value");
+    return { name, value };
+  });
+  try {
+    return await Promise.any(tasks);
+  } catch (_) {
+    return null;
+  }
+}
+
+let fetchingPrice = false;
+let fetchingFx = false;
+
+async function fetchFx() {
+  if (fetchingFx) return;
+  fetchingFx = true;
+  if (state.settings.manualFx > 0) {
+    state.settings.fx = state.settings.manualFx;
+    fxInfo = { src: "手动设定", live: false };
   } else {
-    let got = false;
-    for (const [name,url,pick] of PRICE_SOURCES){
-      const j = await grab(url); if (!j) continue;
-      let v; try{ v = pick(j); }catch(e){ continue; }
-      if (isFinite(v) && v > 0){ price = { v, chg: price.chg, src: name, live: true }; got = true; break; }
+    const result = await firstValid(FX_SOURCES, (value) => value > 3 && value < 20, 4800);
+    if (result) {
+      state.settings.fx = +result.value.toFixed(4);
+      fxInfo = { src: result.name, live: true };
+      await persist();
+    } else {
+      fxInfo = { src: "取不到，沿用上次汇率", live: false };
     }
-    if (!got) price = { ...price, live:false, src: price.v ? price.src+"（已失效）" : "行情不可用" };
+  }
+  fetchingFx = false;
+  paintTick();
+  render();
+}
+
+async function fetchPrice() {
+  if (fetchingPrice) return;
+  fetchingPrice = true;
+  $("#dot").classList.add("load");
+  if (state.settings.manualPx > 0) {
+    price = { v: state.settings.manualPx, chg: null, src: "手动设定", live: false, at: Date.now() };
+  } else {
+    const result = await firstValid(PRICE_SOURCES, (value) => Number.isFinite(value) && value > 1000 && value < 1e8, 4800);
+    if (result) {
+      price = { v: result.value, chg: price.chg, src: result.name, live: true, at: Date.now() };
+      state.settings.lastPx = result.value;
+      state.settings.lastPxAt = new Date().toISOString();
+      state.settings.lastPxSource = result.name;
+      await persist();
+    } else if (state.settings.lastPx > 0) {
+      price = { v: state.settings.lastPx, chg: null, src: "上次行情", live: false, at: state.settings.lastPxAt ? new Date(state.settings.lastPxAt).getTime() : null };
+    } else {
+      price = { v: null, chg: null, src: "行情不可用", live: false, at: null };
+    }
   }
   $("#dot").classList.remove("load");
-  fetching = false; paintTick(); render();
-  if (price.live) fetchChange();          // 不 await，拿不到也不影响价格
+  fetchingPrice = false;
+  paintTick();
+  render();
+  if (price.live) fetchChange();
 }
 
-async function fetchChange(){
-  for (const [url,pick] of CHG_SOURCES){
-    const j = await grab(url, 4000); if (!j) continue;
-    let c; try{ c = pick(j); }catch(e){ continue; }
-    if (isFinite(c)){ price.chg = c; paintTick(); return; }
+async function fetchChange() {
+  const sources = CHANGE_SOURCES.map(([url, pick]) => ["24h", url, pick]);
+  const result = await firstValid(sources, Number.isFinite, 4000);
+  if (result) {
+    price.chg = result.value;
+    paintTick();
   }
 }
 
-function paintTick(){
-  $("#px").textContent = price.v ? "$"+fmt(price.v,0) : "—";
-  const e24 = $("#px24");
-  if (price.chg == null){ e24.textContent = price.v ? "24h —" : ""; e24.className = "num flat"; }
-  else { e24.textContent = pct(price.chg)+" 24h"; e24.className = "num " + (price.chg>=0 ? "up" : "down"); }
-  $("#pxsrc").textContent = price.v ? price.src : "行情不可用 · 点此重试";
-  $("#dot").className = "dot" + (price.live ? "" : " stale");
-  $("#setPxSrc").textContent = price.live ? `留空自动获取 · 当前 ${price.src}` : "留空则自动获取";
-  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v,0)}` : "自动";
-  $("#setFxSrc").textContent = state.settings.manualFx > 0
-    ? "USD/CNY · 手动设定，清空则自动获取"
-    : `USD/CNY · ${fxInfo.live ? "实时 "+fxInfo.src : fxInfo.src}`;
+function paintTick() {
+  $("#px").textContent = price.v ? `$${fmt(price.v, 0)}` : "—";
+  const change = $("#px24");
+  if (!Number.isFinite(price.chg)) {
+    change.textContent = price.v ? "24h —" : "";
+    change.className = "num flat";
+  } else {
+    change.textContent = `${pct(price.chg)} 24h`;
+    change.className = `num ${price.chg >= 0 ? "up" : "down"}`;
+  }
+  let source = price.v ? price.src : "行情不可用 · 点此重试";
+  if (price.v && !price.live && price.at) {
+    const ageMinutes = Math.max(0, Math.round((Date.now() - price.at) / 60000));
+    source += ageMinutes < 60 ? ` · ${ageMinutes} 分钟前` : ` · ${Math.round(ageMinutes / 60)} 小时前`;
+  }
+  $("#pxsrc").textContent = source;
+  $("#dot").className = `dot${price.live ? "" : " stale"}`;
+  $("#setPxSrc").textContent = state.settings.manualPx > 0 ? "手动设定，清空则恢复自动" : price.live ? `自动行情 · ${price.src}` : "留空则自动获取";
+  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v, 0)}` : "自动";
+  $("#setFxSrc").textContent = state.settings.manualFx > 0 ? "USD/CNY · 手动设定" : `USD/CNY · ${fxInfo.live ? fxInfo.src : fxInfo.src}`;
 }
-$("#tick").addEventListener("click", ()=>{ fetchFx().then(fetchPrice); });
 
-/* ═══════════ 表单 ═══════════ */
-const F = { d:$("#fDate"), c:$("#fCny"), r:$("#fRate"), u:$("#fUsdt"), p:$("#fPrice"), b:$("#fBtc"), n:$("#fNote") };
+$("#tick").addEventListener("click", async () => {
+  await Promise.all([fetchFx(), fetchPrice()]);
+});
 
-/* 每一段三个数只需填两个，第三个自动算。
-   d1: 第一段中由程序推出的那个（"usdt" 或 "rate"）
-   d2: 第二段中由程序推出的那个（"btc"  或 "price"） */
-let d1 = "usdt", d2 = "btc", loading = false;
-const HINT = { rate:"¥/USDT", usdt:"到账数量", price:"USDT", btc:"到账数量" };
+/* ── 录入 ── */
+const F = {
+  date: $("#fDate"),
+  cny: $("#fCny"),
+  rate: $("#fRate"),
+  received: $("#fUsdt"),
+  spent: $("#fSpent"),
+  quote: $("#fPrice"),
+  btc: $("#fBtc"),
+  note: $("#fNote"),
+};
+let loadingForm = false;
+let firstLegAuto = "received";
+let secondLegAuto = "btc";
+let spendLinked = true;
 
-function calcLeg1(){
-  const c=num(F.c.value), r=num(F.r.value), u=num(F.u.value);
-  if (d1 === "usdt"){ if (c>0 && r>0) F.u.value = (c/r).toFixed(2); }
-  else              { if (c>0 && u>0) F.r.value = (c/u).toFixed(4); }
+function setPressed(active, buttons) {
+  buttons.forEach((button) => button.setAttribute("aria-pressed", button === active ? "true" : "false"));
 }
-function calcLeg2(){
-  const u=num(F.u.value), p=num(F.p.value), b=num(F.b.value);
-  if (d2 === "btc"){ if (u>0 && p>0) F.b.value = (u/p).toFixed(8); }
-  else             { if (u>0 && b>0) F.p.value = (u/b).toFixed(2); }
-}
-function markAuto(){
-  const set = (el,key,on)=>{
-    el.closest(".f").classList.toggle("auto", on);
-    $("#em"+key[0].toUpperCase()+key.slice(1)).textContent = on ? "自动算出" : HINT[key];
-  };
-  set(F.r,"rate",  d1==="rate");
-  set(F.u,"usdt",  d1==="usdt");
-  set(F.p,"price", d2==="price");
-  set(F.b,"btc",   d2==="btc");
-}
-function recalc(){ if (loading) return; calcLeg1(); calcLeg2(); markAuto(); refreshHint(); }
 
-F.c.addEventListener("input", recalc);
-F.r.addEventListener("input", ()=>{ d1 = "usdt"; recalc(); });
-F.u.addEventListener("input", ()=>{ d1 = "rate"; recalc(); });
-F.p.addEventListener("input", ()=>{ d2 = "btc";   recalc(); });
-F.b.addEventListener("input", ()=>{ d2 = "price"; recalc(); });
+function setEntryMode(mode) {
+  entryMode = ["full", "btc", "stable"].includes(mode) ? mode : "full";
+  $("#form").dataset.mode = entryMode;
+  const active = entryMode === "btc" ? $("#modeBtc") : entryMode === "stable" ? $("#modeStable") : $("#modeFull");
+  setPressed(active, [$("#modeFull"), $("#modeBtc"), $("#modeStable")]);
+  F.cny.required = entryMode !== "btc";
+  if (!loadingForm) {
+    if (entryMode === "stable") {
+      F.spent.value = "";
+      F.quote.value = "";
+      F.btc.value = "";
+    } else if (entryMode === "btc") {
+      F.cny.value = "";
+      F.rate.value = "";
+      F.received.value = "";
+      spendLinked = false;
+    }
+  }
+  recalcForm();
+}
 
-function refreshHint(){
-  const c=num(F.c.value), b=num(F.b.value), u=num(F.u.value), r=num(F.r.value);
+function setStable(asset) {
+  stableAsset = asset === "USDC" ? "USDC" : "USDT";
+  setPressed(stableAsset === "USDC" ? $("#stableUsdc") : $("#stableUsdt"), [$("#stableUsdt"), $("#stableUsdc")]);
+  $("#emRate").textContent = firstLegAuto === "rate" ? "自动算出" : `¥/${stableAsset}`;
+  $("#emPrice").textContent = secondLegAuto === "price" ? "自动算出" : stableAsset;
+  $("#emSpent").textContent = `支付 ${stableAsset}`;
+  refreshAvailable();
+}
+
+function setAutoField(element, auto, autoText, normalText) {
+  element.closest(".f").classList.toggle("auto", auto);
+  const label = element.closest(".f").querySelector("em");
+  if (label) label.textContent = auto ? autoText : normalText;
+}
+
+function calcFirstLeg() {
+  if (entryMode === "btc") return;
+  const c = strictNumber(F.cny.value);
+  const r = strictNumber(F.rate.value);
+  const received = strictNumber(F.received.value);
+  if (firstLegAuto === "received" && c > 0 && r > 0) F.received.value = (c / r).toFixed(2);
+  if (firstLegAuto === "rate" && c > 0 && received > 0) F.rate.value = (c / received).toFixed(4);
+  if (entryMode === "full" && spendLinked) F.spent.value = F.received.value;
+}
+
+function calcSecondLeg() {
+  if (entryMode === "stable") return;
+  const spent = strictNumber(F.spent.value);
+  const quote = strictNumber(F.quote.value);
+  const btc = strictNumber(F.btc.value);
+  if (secondLegAuto === "btc" && spent > 0 && quote > 0) F.btc.value = (spent / quote).toFixed(8);
+  if (secondLegAuto === "price" && spent > 0 && btc > 0) F.quote.value = (spent / btc).toFixed(2);
+  if (secondLegAuto === "spent" && quote > 0 && btc > 0) F.spent.value = (quote * btc).toFixed(2);
+}
+
+function markAutoFields() {
+  setAutoField(F.rate, firstLegAuto === "rate", "自动算出", `¥/${stableAsset}`);
+  setAutoField(F.received, firstLegAuto === "received", "自动算出", "到账数量");
+  setAutoField(F.quote, secondLegAuto === "price", "自动算出", stableAsset);
+  setAutoField(F.btc, secondLegAuto === "btc", "自动算出", "到账数量");
+  F.spent.closest(".f").classList.toggle("auto", entryMode === "full" && spendLinked);
+  $("#emSpent").textContent = entryMode === "full" && spendLinked ? "跟随到账" : `支付 ${stableAsset}`;
+}
+
+function refreshAvailable() {
+  const summary = calc();
+  let available = summary.inventory[stableAsset].qty;
+  if (entryMode === "full") available += positive(F.received.value);
+  $("#fAvail").textContent = `账本余额 ${fmt(available, 2)} ${stableAsset}`;
+}
+
+function refreshFormHint() {
+  const c = positive(F.cny.value);
+  const btc = positive(F.btc.value);
+  const received = positive(F.received.value);
+  const spent = positive(F.spent.value);
   const parts = [];
-  if (c>0 && b>0) parts.push(`折合 ¥${fmt(c/b,0)}/枚`);
-  if (b>0) parts.push(`${sats(b)} sats`);
-  if (c>0 && u>0 && state.settings.fx>0){
-    const prem = (c/u)/state.settings.fx - 1;
-    if (Math.abs(prem) > 0.0005) parts.push(`C2C 溢价 ${(prem*100).toFixed(2)}%`);
+  if (entryMode !== "stable" && btc > 0) parts.push(`${sats(btc)} sats`);
+  if (entryMode === "full" && c > 0 && btc > 0 && received > 0) {
+    const allocated = c * Math.min(1, spent / received);
+    parts.push(`本笔约 ¥${fmt(allocated / btc, 0)}/BTC`);
+  }
+  if (entryMode !== "btc" && c > 0 && received > 0 && state.settings.fx > 0) {
+    const premium = c / received / state.settings.fx - 1;
+    if (Math.abs(premium) > 0.0005) parts.push(`C2C 溢价 ${(premium * 100).toFixed(2)}%`);
   }
   $("#fHint").textContent = parts.join(" · ");
 }
-function today(){ return new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10); }
 
-function openForm(rec){
-  editingId = rec ? rec.id : null;
-  loading = true;
-  d1 = "usdt"; d2 = "btc";
-  $("#formTitle").textContent = rec ? "编辑记录" : "记一笔定投";
-  $("#fDelete").hidden = !rec;
-  const last = state.records[state.records.length-1];
-  F.d.value = rec ? rec.date : today();
-  F.c.value = rec ? rec.cny  : (last ? last.cny : "");
-  F.r.value = rec ? rec.rate.toFixed(4) : (last ? last.rate : state.settings.fx);
-  F.u.value = rec ? rec.usdt.toFixed(2) : "";
-  F.p.value = rec ? rec.price : (price.v ? price.v.toFixed(2) : "");
-  F.b.value = rec ? rec.btc.toFixed(8) : "";
-  F.n.value = rec ? (rec.note||"") : "";
-  loading = false;
-  if (!rec) recalc(); else { markAuto(); refreshHint(); }
-  $("#form").classList.add("open");
-  $("#form").scrollIntoView({ behavior:"smooth", block:"center" });
-  setTimeout(()=>F.c.focus(), 250);
+function recalcForm() {
+  if (loadingForm) return;
+  calcFirstLeg();
+  calcSecondLeg();
+  markAutoFields();
+  refreshAvailable();
+  refreshFormHint();
 }
-function closeForm(){ $("#form").classList.remove("open"); editingId = null; }
-$("#btnAdd").addEventListener("click", ()=> $("#form").classList.contains("open") ? closeForm() : openForm(null));
-$("#fCancel").addEventListener("click", closeForm);
 
-$("#form").addEventListener("submit", async e=>{
-  e.preventDefault();
-  const c=num(F.c.value);
-  let r=num(F.r.value), p=num(F.p.value), u=num(F.u.value), b=num(F.b.value);
-  if (!F.d.value) return toast("请填日期");
-  if (!(c>0)) return toast("填一下人民币金额");
-  if (!(u>0) && r>0) u = c/r;
-  if (!(r>0) && u>0) r = c/u;
-  if (!(u>0)) return toast("C2C 单价和实收 USDT，填一个");
-  if (!(b>0) && p>0) b = u/p;
-  if (!(p>0) && b>0) p = u/b;
-  if (!(b>0)) return toast("BTC 成交价和实收 BTC，填一个");
-  const rec = { id: editingId||uid(), date:F.d.value, cny:c, rate:r, usdt:u, price:p, btc:b, note:F.n.value.trim() };
-  const was = editingId;
-  if (was){ state.records[state.records.findIndex(x=>x.id===was)] = rec; }
-  else state.records.push(rec);
-  state.records.sort((a,b2)=> a.date<b2.date ? -1 : 1);
-  await persist(); closeForm(); render();
-  toast(was ? "已更新" : `已记 ₿${b.toFixed(6)}`);
+F.cny.addEventListener("input", recalcForm);
+F.rate.addEventListener("input", () => { firstLegAuto = "received"; recalcForm(); });
+F.received.addEventListener("input", () => { firstLegAuto = "rate"; recalcForm(); });
+F.spent.addEventListener("input", () => { spendLinked = false; secondLegAuto = "btc"; recalcForm(); });
+F.quote.addEventListener("input", () => { secondLegAuto = "btc"; recalcForm(); });
+F.btc.addEventListener("input", () => {
+  secondLegAuto = positive(F.spent.value) > 0 ? "price" : "spent";
+  recalcForm();
 });
 
-$("#fDelete").addEventListener("click", async ()=>{
-  const id = editingId; if (!id) return;
-  const rec = state.records.find(x=>x.id===id);
-  state.records = state.records.filter(x=>x.id!==id);
-  await persist(); closeForm(); render();
-  toast(`已删除 ${rec.date} 的 ¥${fmt(rec.cny,0)}`, "撤销", async ()=>{
-    state.records.push(rec);
-    state.records.sort((a,b)=> a.date<b.date ? -1 : 1);
-    await persist(); render(); toast("已恢复");
+$("#modeFull").addEventListener("click", () => setEntryMode("full"));
+$("#modeBtc").addEventListener("click", () => setEntryMode("btc"));
+$("#modeStable").addEventListener("click", () => setEntryMode("stable"));
+$("#stableUsdt").addEventListener("click", () => setStable("USDT"));
+$("#stableUsdc").addEventListener("click", () => setStable("USDC"));
+
+function openForm(record) {
+  editingId = record ? record.id : null;
+  loadingForm = true;
+  firstLegAuto = "received";
+  secondLegAuto = "btc";
+  const mode = record ? recordKind(record) === "完整定投" ? "full" : record.btc > 0 ? "btc" : "stable" : "full";
+  entryMode = mode;
+  stableAsset = record?.stable || "USDT";
+  spendLinked = !record || (mode === "full" && Math.abs(record.spent - record.usdt) < 1e-7);
+  $("#formTitle").textContent = record ? "编辑这笔记录" : "记一笔定投";
+  $("#fDelete").hidden = !record;
+  const previous = state.records[state.records.length - 1];
+  F.date.value = record?.date || today();
+  F.cny.value = record?.cny ? record.cny : previous?.cny || "";
+  F.rate.value = record?.rate ? record.rate.toFixed(4) : previous?.rate || state.settings.fx;
+  F.received.value = record?.usdt ? record.usdt.toFixed(2) : "";
+  F.spent.value = record?.spent ? record.spent.toFixed(2) : "";
+  F.quote.value = record?.price ? record.price.toFixed(2) : price.v ? price.v.toFixed(2) : "";
+  F.btc.value = record?.btc ? record.btc.toFixed(8) : "";
+  F.note.value = record?.note || "";
+  loadingForm = false;
+  setEntryMode(mode);
+  setStable(stableAsset);
+  if (!record) recalcForm();
+  $("#entryBackdrop").classList.add("open");
+  $("#form").classList.add("open");
+  document.body.classList.add("sheet-open");
+  setTimeout(() => (entryMode === "btc" ? F.spent : F.cny).focus(), 220);
+}
+
+function closeForm() {
+  $("#entryBackdrop").classList.remove("open");
+  $("#form").classList.remove("open");
+  document.body.classList.remove("sheet-open");
+  editingId = null;
+}
+
+$("#btnAdd").addEventListener("click", () => openForm(null));
+$("#fCancel").addEventListener("click", closeForm);
+$("#fClose").addEventListener("click", closeForm);
+$("#entryBackdrop").addEventListener("click", closeForm);
+
+$("#form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!validDate(F.date.value)) return toast("请选择正确日期");
+  if (dateMs(F.date.value) > dateMs(today())) return toast("买入日期不能晚于今天");
+
+  let c = entryMode === "btc" ? 0 : positive(F.cny.value);
+  let rate = entryMode === "btc" ? 0 : positive(F.rate.value);
+  let received = entryMode === "btc" ? 0 : positive(F.received.value);
+  let spent = entryMode === "stable" ? 0 : positive(F.spent.value);
+  let quote = entryMode === "stable" ? 0 : positive(F.quote.value);
+  let btc = entryMode === "stable" ? 0 : positive(F.btc.value);
+
+  if (entryMode !== "btc") {
+    if (!(c > 0)) return toast("请填写人民币投入");
+    if (!(received > 0) && rate > 0) received = c / rate;
+    if (!(rate > 0) && received > 0) rate = c / received;
+    if (!(received > 0 && rate > 0)) return toast("C2C 单价与到账数量至少填一个");
+  }
+  if (entryMode !== "stable") {
+    if (!(btc > 0) && spent > 0 && quote > 0) btc = spent / quote;
+    if (!(quote > 0) && spent > 0 && btc > 0) quote = spent / btc;
+    if (!(spent > 0) && quote > 0 && btc > 0) spent = quote * btc;
+    if (!(spent > 0 && btc > 0 && quote > 0)) return toast("稳定币支付、成交价、BTC 到账至少填两个");
+  }
+
+  const wasEditing = Boolean(editingId);
+  const previousRecord = editingId ? state.records.find((record) => record.id === editingId) : null;
+  const candidate = {
+    id: editingId || uid(),
+    date: F.date.value,
+    createdAt: previousRecord?.createdAt ?? Date.now(),
+    stable: stableAsset,
+    cny: c,
+    rate,
+    usdt: received,
+    spent,
+    price: quote,
+    btc,
+    note: F.note.value.trim().slice(0, 180),
+  };
+  const nextRecords = editingId
+    ? state.records.map((record) => record.id === editingId ? candidate : record)
+    : state.records.concat(candidate);
+  const tested = calc(sortRecords(nextRecords));
+  if (tested.invalid.length) {
+    const problem = tested.invalid[0];
+    return toast(`${problem.stable} 余额不足 ${fmt(problem.deficit, 2)}，先记录 C2C 充值`);
+  }
+  state.records = sortRecords(nextRecords);
+  await persist();
+  closeForm();
+  render();
+  toast(wasEditing ? "已更新记录" : btc > 0 ? `已记 ₿${btcText(btc, 6)}` : `已存入 ${fmt(received, 2)} ${stableAsset}`);
+});
+
+$("#fDelete").addEventListener("click", async () => {
+  if (!editingId) return;
+  const record = state.records.find((item) => item.id === editingId);
+  if (!record) return closeForm();
+  state.records = state.records.filter((item) => item.id !== editingId);
+  await persist();
+  closeForm();
+  render();
+  toast(`已删除 ${record.date} 的记录`, "撤销", async () => {
+    state.records = sortRecords(state.records.concat(record));
+    await persist();
+    render();
+    toast("已恢复");
   });
 });
 
-$("#rows").addEventListener("click", e=>{
-  const yr = e.target.closest("[data-yr]");
-  if (yr){ const y = yr.dataset.yr; collapsed[y] = !collapsed[y]; renderRows(calc()); return; }
-  const row = e.target.closest(".row");
-  if (row) openForm(state.records.find(x=>x.id===row.dataset.id));
+$("#rows").addEventListener("click", (event) => {
+  const yearButton = event.target.closest("[data-yr]");
+  if (yearButton) {
+    const year = yearButton.dataset.yr;
+    collapsed[year] = !collapsed[year];
+    renderRows(calc());
+    return;
+  }
+  const row = event.target.closest(".row");
+  if (row) openForm(state.records.find((record) => record.id === row.dataset.id));
 });
 
-/* ═══════════ 切换 ═══════════ */
-const seg = (a,b,on)=>{ a.setAttribute("aria-pressed",on); b.setAttribute("aria-pressed",!on); };
-$("#baseCny").addEventListener("click", async ()=>{ state.settings.base="CNY"; seg($("#baseCny"),$("#baseUsdt"),true); await persist(); render(); });
-$("#baseUsdt").addEventListener("click", async ()=>{ state.settings.base="USDT"; seg($("#baseUsdt"),$("#baseCny"),true); await persist(); render(); });
-const TABS = { stack:"#tabStack", cost:"#tabCost", buy:"#tabBuy" };
-Object.keys(TABS).forEach(k => $(TABS[k]).addEventListener("click", ()=>{
-  chartTab = k; hoverX = null;
-  for (const [n,sel] of Object.entries(TABS)) $(sel).setAttribute("aria-pressed", n===k);
+/* ── 视图与设置 ── */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
+  const background = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", background);
+}
+
+function openModal(modal) {
+  modal.classList.add("open");
+  document.body.classList.add("sheet-open");
+}
+
+function closeModal(modal) {
+  modal.classList.remove("open");
+  if (!$(".modal.open") && !$("#form").classList.contains("open")) document.body.classList.remove("sheet-open");
+}
+
+$("#baseCny").addEventListener("click", async () => {
+  state.settings.base = "CNY";
+  setPressed($("#baseCny"), [$("#baseCny"), $("#baseUsdt")]);
+  await persist();
+  render();
+});
+$("#baseUsdt").addEventListener("click", async () => {
+  state.settings.base = "USDT";
+  setPressed($("#baseUsdt"), [$("#baseCny"), $("#baseUsdt")]);
+  await persist();
+  render();
+});
+
+const TABS = { stack: $("#tabStack"), cost: $("#tabCost"), buy: $("#tabBuy") };
+Object.entries(TABS).forEach(([name, button]) => button.addEventListener("click", () => {
+  chartTab = name;
+  hoverX = null;
+  setPressed(button, Object.values(TABS));
   drawChart(calc());
 }));
 
-/* ═══════════ 主题 ═══════════ */
-function applyTheme(t){
-  document.documentElement.setAttribute("data-theme", t==="dark" ? "dark" : "light");
-  const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-  document.querySelector('meta[name="theme-color"]').setAttribute("content", bg);
-}
-$("#btnTheme").addEventListener("click", async ()=>{
-  state.settings.theme = state.settings.theme==="dark" ? "light" : "dark";
-  applyTheme(state.settings.theme); render(); await persist();
+$("#btnTheme").addEventListener("click", async () => {
+  state.settings.theme = state.settings.theme === "dark" ? "light" : "dark";
+  applyTheme(state.settings.theme);
+  render();
+  await persist();
 });
 
-/* ═══════════ 设置 ═══════════ */
-$("#btnSettings").addEventListener("click", ()=>{
+$("#btnSettings").addEventListener("click", () => {
+  $("#setBaseBtc").value = state.settings.baselineBtc || "";
+  $("#setBaseCny").value = state.settings.baselineCny || "";
+  $("#setBaseDate").value = state.settings.baselineDate || "";
   $("#setFx").value = state.settings.manualFx || "";
   $("#setFx").placeholder = `自动 · ${state.settings.fx}`;
   $("#setPx").value = state.settings.manualPx || "";
-  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v,0)}` : "自动";
-  seg($("#cnRed"), $("#cnGreen"), state.settings.redUp);
-  $("#mSettings").classList.add("open");
+  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v, 0)}` : "自动";
+  setPressed(state.settings.redUp ? $("#cnRed") : $("#cnGreen"), [$("#cnRed"), $("#cnGreen")]);
+  openModal($("#mSettings"));
 });
-$("#setClose").addEventListener("click", async ()=>{
-  const fx = num($("#setFx").value);
-  state.settings.manualFx = fx>0 ? fx : null;
-  if (fx>0) state.settings.fx = fx;
-  const mp = num($("#setPx").value); state.settings.manualPx = mp>0 ? mp : null;
-  $("#mSettings").classList.remove("open");
-  await persist(); await fetchFx(); await fetchPrice();
-});
-$("#cnRed").addEventListener("click", async ()=>{ state.settings.redUp=true;  seg($("#cnRed"),$("#cnGreen"),true);  render(); await persist(); });
-$("#cnGreen").addEventListener("click", async ()=>{ state.settings.redUp=false; seg($("#cnGreen"),$("#cnRed"),true); render(); await persist(); });
 
-/* ═══════════ 数据 ═══════════ */
-function snapshot(){ return JSON.stringify({ records: state.records, settings: state.settings }, null, 1); }
-function download(name, text, mime){
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
-  a.download = name; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+$("#setClose").addEventListener("click", async () => {
+  const baselineBtc = positive($("#setBaseBtc").value);
+  const baselineCny = positive($("#setBaseCny").value);
+  let baselineDate = $("#setBaseDate").value;
+  if ((baselineBtc > 0) !== (baselineCny > 0)) return toast("已有 BTC 与累计成本需要一起填写");
+  if (baselineDate && (!validDate(baselineDate) || dateMs(baselineDate) > dateMs(today()))) return toast("基线日期不能晚于今天");
+  const firstTracked = state.records[0]?.date;
+  if (baselineBtc > 0 && !baselineDate) baselineDate = firstTracked || today();
+  if (baselineDate && firstTracked && baselineDate > firstTracked) return toast("基线日期应早于第一笔记账记录");
+
+  const manualFx = positive($("#setFx").value);
+  const manualPx = positive($("#setPx").value);
+  if ($("#setFx").value.trim() && !(manualFx > 3 && manualFx < 20)) return toast("汇率请输入 3–20 之间的数值");
+  if ($("#setPx").value.trim() && !(manualPx > 1000 && manualPx < 1e8)) return toast("BTC 价格看起来不合理，请检查");
+  state.settings.baselineBtc = baselineBtc;
+  state.settings.baselineCny = baselineCny;
+  state.settings.baselineDate = baselineBtc > 0 ? baselineDate : "";
+  state.settings.manualFx = manualFx || null;
+  if (manualFx) state.settings.fx = manualFx;
+  state.settings.manualPx = manualPx || null;
+  closeModal($("#mSettings"));
+  await persist();
+  await Promise.all([fetchFx(), fetchPrice()]);
+});
+
+$("#cnRed").addEventListener("click", async () => {
+  state.settings.redUp = true;
+  setPressed($("#cnRed"), [$("#cnRed"), $("#cnGreen")]);
+  render();
+  await persist();
+});
+$("#cnGreen").addEventListener("click", async () => {
+  state.settings.redUp = false;
+  setPressed($("#cnGreen"), [$("#cnRed"), $("#cnGreen")]);
+  render();
+  await persist();
+});
+
+/* ── 备份与导入 ── */
+function snapshot() {
+  return JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), records: state.records, settings: state.settings }, null, 2);
 }
-function paintBackupState(){
-  const el = $("#bState"), t = state.settings.lastBackup;
-  const n = state.records.length;
-  if (!t){
-    el.textContent = n ? `${n} 笔记录 · 还没有导出过备份` : "账本还是空的";
-    el.className = "bstate" + (n ? " warn" : "");
+
+function download(name, text, mime) {
+  const anchor = document.createElement("a");
+  anchor.href = URL.createObjectURL(new Blob([text], { type: mime }));
+  anchor.download = name;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(anchor.href), 4000);
+}
+
+function paintBackupState() {
+  const element = $("#bState");
+  const backupAt = state.settings.lastBackup;
+  const count = state.records.length;
+  if (!backupAt) {
+    element.textContent = count ? `${count} 笔记录 · 还没有导出过备份` : "账本还是空的";
+    element.className = `bstate${count ? " warn" : ""}`;
     return;
   }
-  const days = Math.floor((Date.now() - new Date(t).getTime())/DAY);
-  el.textContent = `${n} 笔记录 · 上次备份 ${days === 0 ? "就在今天" : days + " 天前"}`;
-  el.className = "bstate" + (days > 60 ? " warn" : "");
+  const days = Math.max(0, Math.floor((Date.now() - new Date(backupAt).getTime()) / DAY));
+  element.textContent = `${count} 笔记录 · 上次备份 ${days === 0 ? "就在今天" : `${days} 天前`}`;
+  element.className = `bstate${days > 60 ? " warn" : ""}`;
 }
 
-/* 导入一份账本，保留旧数据以便撤销 */
-async function applyImport(obj, label){
-  if (!obj || !Array.isArray(obj.records)) throw new Error("bad");
-  const backup = { records: state.records.slice(), settings: { ...state.settings } };
-  state.records = obj.records
-    .filter(r => r && r.date && r.cny > 0)
-    .map(r => ({ ...r, id: r.id || uid() }))
-    .sort((a,b)=> a.date < b.date ? -1 : 1);
-  if (obj.settings) state.settings = { ...state.settings, ...obj.settings };
+async function applyImport(object, label) {
+  if (!object || !Array.isArray(object.records)) throw new Error("bad schema");
+  const imported = migrate(object);
+  if (object.records.length && !imported.records.length) throw new Error("no valid records");
+  if ((imported.settings.baselineBtc > 0) !== (imported.settings.baselineCny > 0)) throw new Error("bad baseline");
+  const test = calc(imported.records, imported.settings);
+  if (test.invalid.length) throw new Error("stablecoin balance deficit");
+  const backup = JSON.parse(JSON.stringify(state));
+  state = imported;
   applyTheme(state.settings.theme);
-  seg($("#baseCny"), $("#baseUsdt"), state.settings.base === "CNY");
-  await persist(); $("#mData").classList.remove("open"); render();
-  toast(`${label}${state.records.length} 笔`, "撤销", async ()=>{
-    state.records = backup.records; state.settings = backup.settings;
-    applyTheme(state.settings.theme); await persist(); render(); toast("已还原");
+  setPressed(state.settings.base === "CNY" ? $("#baseCny") : $("#baseUsdt"), [$("#baseCny"), $("#baseUsdt")]);
+  await persist();
+  closeModal($("#mData"));
+  render();
+  toast(`${label}${state.records.length} 笔`, "撤销", async () => {
+    state = backup;
+    applyTheme(state.settings.theme);
+    await persist();
+    render();
+    toast("已还原导入前数据");
   });
 }
 
-$("#btnData").addEventListener("click", ()=>{
+$("#btnData").addEventListener("click", () => {
   $("#dataText").value = snapshot();
   paintBackupState();
-  $("#mData").classList.add("open");
+  openModal($("#mData"));
 });
-$("#dClose").addEventListener("click", ()=> $("#mData").classList.remove("open"));
+$("#dClose").addEventListener("click", () => closeModal($("#mData")));
 
-$("#dExport").addEventListener("click", async ()=>{
-  download(`定投账本-${today()}.json`, snapshot(), "application/json");
+$("#dExport").addEventListener("click", async () => {
+  download(`BTC-定投账本-${today()}.json`, snapshot(), "application/json");
   state.settings.lastBackup = new Date().toISOString();
-  await persist(); paintBackupState();
-  toast(`已导出 ${state.records.length} 笔`);
+  await persist();
+  paintBackupState();
+  toast(`已导出 ${state.records.length} 笔记录`);
 });
 
-$("#dImportFile").addEventListener("click", ()=> $("#fileInput").click());
-$("#fileInput").addEventListener("change", async e=>{
-  const file = e.target.files && e.target.files[0];
-  e.target.value = "";
+$("#dImportFile").addEventListener("click", () => $("#fileInput").click());
+$("#fileInput").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
   if (!file) return;
-  try{ await applyImport(JSON.parse(await file.text()), "已从备份恢复 "); }
-  catch(err){ toast("这个文件读不出账本内容"); }
+  try {
+    await applyImport(JSON.parse(await file.text()), "已从备份恢复 ");
+  } catch (_) {
+    toast("备份格式或稳定币余额校验未通过");
+  }
 });
 
-$("#dImport").addEventListener("click", async ()=>{
-  try{ await applyImport(JSON.parse($("#dataText").value), "已导入 "); }
-  catch(err){ toast("JSON 格式不对，检查后重试"); }
+$("#dImport").addEventListener("click", async () => {
+  try {
+    await applyImport(JSON.parse($("#dataText").value), "已导入 ");
+  } catch (_) {
+    toast("JSON 格式或账本逻辑不正确");
+  }
 });
 
-$("#dCopy").addEventListener("click", async ()=>{
-  try{ await navigator.clipboard.writeText(snapshot()); toast("已复制到剪贴板"); }
-  catch(err){ $("#dataText").select(); toast("请手动复制下方文本"); }
+$("#dCopy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(snapshot());
+    toast("已复制 JSON");
+  } catch (_) {
+    $("#dataText").select();
+    toast("请手动复制下方文本");
+  }
 });
 
-$("#dCsv").addEventListener("click", ()=>{
-  const head = "日期,人民币,C2C单价,USDT,BTC成交价,BTC数量,备注\n";
-  const body = state.records.map(r=>[r.date,r.cny,r.rate,r.usdt,r.price,r.btc,`"${(r.note||"").replace(/"/g,'""')}"`].join(",")).join("\n");
-  download(`定投账本-${today()}.csv`, "\uFEFF"+head+body, "text/csv;charset=utf-8");
+const csvCell = (value) => {
+  let text = String(value ?? "");
+  if (/^[=+@-]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
+};
+$("#dCsv").addEventListener("click", () => {
+  const header = ["日期", "类型", "稳定币", "人民币", "C2C单价", "稳定币到账", "稳定币支付", "BTC成交价", "BTC到账", "备注"];
+  const lines = state.records.map((record) => [record.date, recordKind(record), record.stable, record.cny, record.rate, record.usdt, record.spent, record.price, record.btc, record.note].map(csvCell).join(","));
+  download(`BTC-定投账本-${today()}.csv`, `\uFEFF${header.map(csvCell).join(",")}\n${lines.join("\n")}`, "text/csv;charset=utf-8");
   toast("CSV 已导出");
 });
 
-document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e=>{ if (e.target===m) m.classList.remove("open"); }));
+$$('.modal').forEach((modal) => modal.addEventListener("click", (event) => {
+  if (event.target === modal) closeModal(modal);
+}));
 
-/* ═══════════ 提示 ═══════════ */
-let tt, undoFn = null;
-function toast(msg, action, fn){
-  const t=$("#toast"), b=$("#toastBtn");
-  $("#toastMsg").textContent = msg;
-  undoFn = fn || null;
-  if (action){ b.hidden=false; b.textContent=action; t.classList.remove("plain"); }
-  else { b.hidden=true; t.classList.add("plain"); }
-  t.classList.add("show"); clearTimeout(tt);
-  tt = setTimeout(()=>t.classList.remove("show"), action ? 6000 : 2400);
+/* ── 提示、保存与启动 ── */
+function toast(message, action, callback) {
+  const toastElement = $("#toast");
+  const actionButton = $("#toastBtn");
+  $("#toastMsg").textContent = message;
+  undoFn = callback || null;
+  if (action) {
+    actionButton.hidden = false;
+    actionButton.textContent = action;
+    toastElement.classList.remove("plain");
+  } else {
+    actionButton.hidden = true;
+    toastElement.classList.add("plain");
+  }
+  toastElement.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastElement.classList.remove("show"), action ? 6000 : 2600);
 }
-$("#toastBtn").addEventListener("click", ()=>{ $("#toast").classList.remove("show"); if (undoFn) undoFn(); undoFn=null; });
-async function persist(){ if (!(await store.save({ records: state.records, settings: state.settings }))) toast("保存失败，请用「数据」导出备份"); }
 
-/* ═══════════ 键盘 ═══════════ */
-document.addEventListener("keydown", e=>{
-  if (e.key === "Escape"){
-    const open = document.querySelector(".modal.open");
-    if (open) open.classList.remove("open");
+$("#toastBtn").addEventListener("click", () => {
+  $("#toast").classList.remove("show");
+  const callback = undoFn;
+  undoFn = null;
+  if (callback) callback();
+});
+
+async function persist() {
+  const ok = await store.save({ version: 2, records: state.records, settings: state.settings });
+  if (!ok) toast("保存失败，请立即导出备份");
+  return ok;
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    const modal = $(".modal.open");
+    if (modal) closeModal(modal);
     else if ($("#form").classList.contains("open")) closeForm();
   }
-  if ((e.metaKey||e.ctrlKey) && e.key === "Enter" && $("#form").classList.contains("open"))
-    $("#form").requestSubmit();
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && $("#form").classList.contains("open")) $("#form").requestSubmit();
 });
-addEventListener("scroll", ()=> $("#hdr").classList.toggle("scrolled", scrollY > 90), { passive:true });
+addEventListener("scroll", () => $("#hdr").classList.toggle("scrolled", scrollY > 90), { passive: true });
 
-/* ═══════════ 图标兜底 ═══════════
-   正常情况下用同目录的 icon-*.png。若只单独部署了 index.html（图标文件缺失），
-   这里用 canvas 现画一个注入，保证不至于变成网页截图。 */
-(function(){
-  const probe = new Image();
-  probe.onerror = () => {
-    try{
-      const draw = size => {
-        const c = document.createElement("canvas"); c.width = c.height = size;
-        const x = c.getContext("2d"), s = size/512;
-        x.fillStyle = "#0E1013"; x.fillRect(0,0,size,size);
-        x.save(); x.translate(size/2, size/2); x.rotate(-13*Math.PI/180);
-        x.fillStyle = "#F7931A";
-        x.font = `bold ${300*s}px "Helvetica Neue", Arial, Helvetica, sans-serif`;
-        x.textAlign = "center"; x.textBaseline = "middle";
-        x.fillText("B", 6*s, 0);
-        x.fillRect(-94*s, -158*s, 34*s, 316*s);
-        x.fillRect(-36*s, -158*s, 34*s, 316*s);
-        x.restore();
-        return c.toDataURL("image/png");
-      };
-      document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="manifest"]')
-        .forEach(l => l.remove());
-      const add = (rel, href, attrs={}) => {
-        const l = document.createElement("link"); l.rel = rel; l.href = href;
-        Object.entries(attrs).forEach(([k,v]) => l.setAttribute(k,v));
-        document.head.appendChild(l);
-      };
-      const big = draw(512);
-      add("icon", big, { type:"image/png", sizes:"512x512" });
-      add("apple-touch-icon", draw(180));
-      const mf = { name:"定投账本", short_name:"定投", start_url:"./", scope:"./",
-        display:"standalone", orientation:"portrait", lang:"zh-CN",
-        background_color:"#F5F4F1", theme_color:"#F5F4F1",
-        icons:[{ src:big, sizes:"512x512", type:"image/png", purpose:"any maskable" }] };
-      add("manifest", URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"})));
-    }catch(e){}
-  };
-  probe.src = "icon-192.png";
-})();
+function installInlineIcon() {
+  try {
+    const icon = document.createElement("canvas");
+    icon.width = icon.height = 192;
+    const iconContext = icon.getContext("2d");
+    iconContext.fillStyle = "#151617";
+    iconContext.fillRect(0, 0, 192, 192);
+    iconContext.fillStyle = "#F7931A";
+    iconContext.font = '700 124px -apple-system, "Helvetica Neue", sans-serif';
+    iconContext.textAlign = "center";
+    iconContext.textBaseline = "middle";
+    iconContext.fillText("₿", 96, 101);
+    const dataUrl = icon.toDataURL("image/png");
+    $$('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="manifest"]').forEach((link) => link.remove());
+    const favicon = document.createElement("link");
+    favicon.rel = "icon";
+    favicon.href = dataUrl;
+    document.head.appendChild(favicon);
+    const apple = document.createElement("link");
+    apple.rel = "apple-touch-icon";
+    apple.href = dataUrl;
+    document.head.appendChild(apple);
+  } catch (_) {}
+}
 
-/* ═══════════ 启动 ═══════════ */
-(async function init(){
-  const saved = await store.load();
-  if (saved){
-    state.records = (saved.records||[]).map(r=>({ ...r, id: r.id||uid() })).sort((a,b)=> a.date<b.date ? -1 : 1);
-    state.settings = { ...state.settings, ...(saved.settings||{}) };
+(async function init() {
+  state = migrate(await store.load());
+  if (state.settings.baselineBtc > 0 && !state.settings.baselineDate) state.settings.baselineDate = state.records[0]?.date || today();
+  if (state.settings.manualPx > 0) {
+    price = { v: state.settings.manualPx, chg: null, src: "手动设定", live: false, at: Date.now() };
+  } else if (state.settings.lastPx > 0) {
+    price = { v: state.settings.lastPx, chg: null, src: "上次行情", live: false, at: state.settings.lastPxAt ? new Date(state.settings.lastPxAt).getTime() : null };
   }
   applyTheme(state.settings.theme);
-  seg($("#baseCny"), $("#baseUsdt"), state.settings.base === "CNY");
-  paintTick(); render();
-  await fetchFx();
-  await fetchPrice();
+  setPressed(state.settings.base === "CNY" ? $("#baseCny") : $("#baseUsdt"), [$("#baseCny"), $("#baseUsdt")]);
+  setEntryMode("full");
+  setStable("USDT");
+  paintTick();
+  render();
+  installInlineIcon();
+  await Promise.all([fetchFx(), fetchPrice()]);
   setInterval(fetchPrice, 60000);
-  setInterval(fetchFx, 1800000);          // 汇率半小时一次足够
-  document.addEventListener("visibilitychange", ()=>{ if (!document.hidden){ fetchFx(); fetchPrice(); } });
+  setInterval(fetchFx, 1800000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) Promise.all([fetchFx(), fetchPrice()]);
+  });
 })();
+
 </script>
 </body>
 </html>
