@@ -374,7 +374,8 @@ html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%
   .hold-row>div:nth-child(even){padding-left:15px;border-left:1px solid rgba(255,255,255,.08)}
   .hold-row b{font-size:15px}
   .actionbar{margin-top:14px;gap:7px;padding-left:12px}
-  .actionbar .cadence{font-size:11.5px;max-width:118px}
+  .actionbar .cadence{font-size:11.5px;white-space:nowrap}
+  .cadence .gap{display:none}
   .actionbar .btn{font-size:12px;padding:9px 11px}
   .chartbox{padding:20px 15px 16px}
   .charttop{display:block}.charttop .seg{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;width:100%}.charttop .seg button{padding:7px 5px}
@@ -389,6 +390,47 @@ html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%
   .modal{padding:0}.sheet{max-width:none;border-radius:26px 26px 0 0;margin:0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
   .row{border-top:1px solid var(--line-soft);border-radius:0;margin:0;padding:15px 0;width:100%;grid-template-columns:1fr auto}
   .row:first-of-type{border-top:0}.row .mini{font-size:12px}
+}
+
+/* ── 定投表现 ── */
+.perf{padding:23px 20px 21px}
+.perf .good{color:var(--usdt)} .perf .bad{color:var(--btc)}
+.perf-hero{display:flex;align-items:baseline;gap:11px;margin:18px 0 0;flex-wrap:wrap}
+.perf-hero b{font-family:var(--mono);font-size:clamp(34px,10vw,42px);font-weight:600;letter-spacing:-.055em;line-height:1;font-variant-numeric:tabular-nums}
+.perf-hero span{font-size:12px;color:var(--faint);letter-spacing:-.005em}
+.perf-say{font-size:12.5px;color:var(--dim);line-height:1.65;margin-top:13px;letter-spacing:-.005em}
+.perf-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;padding-top:17px;border-top:1px solid var(--line-soft)}
+.perf-grid>div{padding:0 14px;border-left:1px solid var(--line-soft);min-width:0}
+.perf-grid>div:first-child{padding-left:0;border-left:0}
+.perf-grid>div:last-child{padding-right:0}
+.perf-grid b{display:block;font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:-.035em;margin-top:7px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal{margin-top:19px;padding-top:17px;border-top:1px solid var(--line-soft)}
+.goal-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:12px;color:var(--dim);margin-bottom:10px;letter-spacing:-.005em}
+.goal-head b{font-family:var(--mono);font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.goal-bar{height:5px;border-radius:99px;background:var(--fill);overflow:hidden}
+.goal-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--btc),var(--btc-vivid));transition:width .6s cubic-bezier(.22,.9,.3,1)}
+
+/* ── 积累日历 ── */
+.cal{margin-top:20px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.cal-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+.cal-head .lbl{font-size:11.5px}
+.cal-head span:last-child{font-family:var(--mono);font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+.cal-row{display:grid;grid-template-columns:30px repeat(12,1fr);gap:4px;align-items:center;margin-bottom:4px}
+.cal-row .yl{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:-.02em}
+.cal-cell{aspect-ratio:1;border-radius:4px;background:var(--fill)}
+.cal-cell.on{background:var(--btc-vivid)}
+.cal-cell.now{box-shadow:inset 0 0 0 1.2px var(--faint)}
+.cal-months{display:grid;grid-template-columns:30px repeat(12,1fr);gap:4px;margin-top:7px}
+.cal-months span{font-family:var(--mono);font-size:9px;color:var(--faint);text-align:center}
+
+@media(max-width:680px){
+  .perf{padding:20px 16px 18px}
+  .perf-grid{grid-template-columns:1fr 1fr;row-gap:16px}
+  .perf-grid>div:nth-child(odd){padding-left:0;border-left:0}
+  .perf-grid>div:nth-child(3){padding-top:16px;border-top:1px solid var(--line-soft);grid-column:1/-1}
+  .goal-head{flex-direction:column;align-items:flex-start;gap:5px}
+  .cal-row,.cal-months{grid-template-columns:26px repeat(12,1fr);gap:3px}
+  .cal-cell{border-radius:3px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -511,6 +553,28 @@ html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%
     <div class="note" id="chartNote"></div>
   </section>
 
+  <section class="card perf" id="perfCard" hidden>
+    <div class="charttop">
+      <div><h2 class="section-title">定投表现</h2><div class="section-sub">看纪律和执行质量，而不是看今天涨没涨</div></div>
+      <span class="records-count" id="perfSpan">—</span>
+    </div>
+    <div class="perf-hero"><b class="flat" id="pXirr">—</b><span id="pXirrNote">年化收益率</span></div>
+    <div class="perf-say" id="perfSay"></div>
+    <div class="perf-grid">
+      <div><span class="lbl">月均投入</span><b id="pMonthly">—</b></div>
+      <div><span class="lbl">对比区间均价</span><b id="pVsAvg">—</b></div>
+      <div><span class="lbl">最深浮亏</span><b id="pDraw">—</b></div>
+    </div>
+    <div class="goal">
+      <div class="goal-head"><span id="goalLabel">下一个积累目标</span><b id="goalText">—</b></div>
+      <div class="goal-bar"><i id="goalBar" style="width:0%"></i></div>
+    </div>
+    <div class="cal" id="calBox" hidden>
+      <div class="cal-head"><span class="lbl">积累日历</span><span id="calStat">—</span></div>
+      <div id="calGrid"></div>
+    </div>
+  </section>
+
   <section class="card ledger">
     <div class="ledger-top">
       <div><h2 class="section-title">资金路径</h2><div class="section-sub">人民币如何变成你的比特币</div></div>
@@ -611,31 +675,33 @@ const DEFAULT_SETTINGS = {
 };
 
 const store = {
-  async load() {
+  async get(key) {
     try {
       if (window.storage) {
-        const result = await window.storage.get(KEY);
+        const result = await window.storage.get(key);
         return result ? JSON.parse(result.value) : null;
       }
-      const raw = window.localStorage.getItem(KEY);
+      const raw = window.localStorage.getItem(key);
       return raw ? JSON.parse(raw) : null;
     } catch (_) {
       return null;
     }
   },
-  async save(value) {
+  async set(key, value) {
     try {
       const text = JSON.stringify(value);
       if (window.storage) {
-        await window.storage.set(KEY, text);
+        await window.storage.set(key, text);
         return true;
       }
-      window.localStorage.setItem(KEY, text);
+      window.localStorage.setItem(key, text);
       return true;
     } catch (_) {
       return false;
     }
   },
+  load() { return this.get(KEY); },
+  save(value) { return this.set(KEY, value); },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -684,6 +750,9 @@ let collapsed = {};
 let hoverX = null;
 let entryMode = "full";
 let stableAsset = "USDT";
+let histMap = null;
+let histCount = 0;
+let daily = null;
 let undoFn = null;
 let toastTimer = null;
 
@@ -861,6 +930,7 @@ function setSignedClass(element, value) {
 
 function render() {
   const summary = calc();
+  daily = buildDaily(summary);
   const isCny = state.settings.base === "CNY";
   const computed = getComputedStyle(document.documentElement);
   const red = computed.getPropertyValue("--red").trim();
@@ -918,6 +988,7 @@ function render() {
   $("#mPx").textContent = price.v ? fmt(price.v, 0) : "—";
 
   renderCadence(summary);
+  renderPerf(summary);
   renderRows(summary);
   drawChart(summary);
 }
@@ -935,11 +1006,10 @@ function renderCadence(summary) {
   let gap = "";
   if (buys.length > 1) {
     const span = (last - dateMs(buys[0].date)) / DAY;
-    gap = ` · 均隔 ${Math.round(span / (buys.length - 1))} 天`;
+    gap = `<span class="gap"> · 均隔 <b>${Math.round(span / (buys.length - 1))}</b> 天</span>`;
   }
-  element.textContent = `距上次 ${since} 天${gap}`;
   element.className = `cadence${since >= 32 ? " due" : ""}`;
-  element.innerHTML = element.textContent.replace(/(\d+) 天/, "<b>$1 天</b>");
+  element.innerHTML = `距上次 <b>${since}</b> 天${gap}`;
 }
 
 function recordKind(record) {
@@ -997,6 +1067,159 @@ function renderRows(summary) {
     }
   }
   box.innerHTML = html;
+}
+
+/* ── 定投表现 ── */
+function underwater() {
+  if (!daily || !daily.length) return null;
+  const isCny = state.settings.base === "CNY";
+  const fx = state.settings.fx;
+  let worst = null;
+  for (const point of daily) {
+    const cost = isCny ? point.costCny : point.costUsd;
+    if (!(cost > 0) || !(point.btc > 0)) continue;
+    const value = (isCny ? point.px * fx : point.px) * point.btc;
+    const ratio = value / cost - 1;
+    if (!worst || ratio < worst.ratio) worst = { ratio, day: point.day };
+  }
+  return worst;
+}
+
+function marketAvgPx(summary) {
+  if (!daily || daily.length < 5 || !summary.buys.length) return NaN;
+  const from = summary.buys[0].date;
+  const slice = daily.filter((point) => point.day >= from);
+  if (slice.length < 5) return NaN;
+  return slice.reduce((sum, point) => sum + point.px, 0) / slice.length;
+}
+
+/* 现金流加权年化：把每笔买入当作一次流出，当前市值当作一次流入 */
+function xirr(flows) {
+  if (flows.length < 2) return NaN;
+  const base = flows[0].t;
+  const npv = (rate) => flows.reduce((sum, flow) => sum + flow.v / Math.pow(1 + rate, (flow.t - base) / (365.25 * DAY)), 0);
+  let low = -0.9999;
+  let high = 100;
+  if (!Number.isFinite(npv(low)) || !Number.isFinite(npv(high)) || npv(low) * npv(high) > 0) return NaN;
+  for (let i = 0; i < 160; i += 1) {
+    const mid = (low + high) / 2;
+    if (npv(low) * npv(mid) <= 0) high = mid; else low = mid;
+  }
+  return (low + high) / 2;
+}
+
+const GOALS = [0.005, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 5, 10, 21];
+
+function renderPerf(summary) {
+  const card = $("#perfCard");
+  if (!summary.buys.length && !(state.settings.baselineBtc > 0)) {
+    card.hidden = true;
+    return;
+  }
+  card.hidden = false;
+  const isCny = state.settings.base === "CNY";
+  const unit = isCny ? "¥" : "$";
+  const start = chartStart(summary);
+  const months = Math.max(0.2, (Date.now() - dateMs(start)) / DAY / 30.44);
+  $("#perfSpan").textContent = `${start.slice(0, 7)} 起 · ${months.toFixed(1)} 个月`;
+
+  const flows = [];
+  if (state.settings.baselineCny > 0) {
+    const baseCost = isCny ? state.settings.baselineCny : state.settings.baselineCny / (state.settings.fx || 1);
+    flows.push({ t: dateMs(state.settings.baselineDate || start), v: -baseCost });
+  }
+  summary.buys.forEach((record) => flows.push({ t: dateMs(record.date), v: -(isCny ? record.allocatedCny : record.spent) }));
+  const value = isCny ? summary.valCny : summary.valUsd;
+  const cost = isCny ? summary.btcCostCny : summary.btcCostUsd;
+  if (Number.isFinite(value) && flows.length) flows.push({ t: Date.now(), v: value });
+  const annual = flows.length > 1 && months >= 3 ? xirr(flows.slice().sort((a, b) => a.t - b.t)) : NaN;
+  const totalRoi = isCny ? summary.roiCny : summary.roiUsd;
+  $("#pXirr").textContent = Number.isFinite(annual) ? pct(annual) : months < 3 && Number.isFinite(totalRoi) ? pct(totalRoi) : "—";
+  setSignedClass($("#pXirr"), Number.isFinite(annual) ? annual : months < 3 ? totalRoi : NaN);
+  $("#pXirrNote").textContent = months < 3
+    ? "累计收益率 · 满 3 个月后换成年化"
+    : isCny ? "年化收益率 · 人民币口径" : "年化收益率 · 美元口径";
+  $("#perfSay").textContent = Number.isFinite(annual) && Number.isFinite(totalRoi)
+    ? `累计 ${pct(totalRoi)}，摊到时间上相当于每年 ${pct(annual)}。定投的钱到位时间不同，所以年化按每笔的实际持有时长加权。`
+    : months < 3
+      ? "时间太短的年化会被放大失真，先看累计。三个月后这里换成按现金流加权的年化。"
+      : "等待行情与首笔买入后，这里会给出按现金流加权的年化。";
+
+  $("#pMonthly").textContent = cost > 0 ? `${unit}${fmtK(cost / months)}` : "—";
+
+  const market = marketAvgPx(summary);
+  const mine = summary.costUsd;
+  const vsElement = $("#pVsAvg");
+  if (Number.isFinite(market) && Number.isFinite(mine) && mine > 0) {
+    const gap = mine / market - 1;
+    vsElement.textContent = `${gap <= 0 ? "低 " : "高 "}${Math.abs(gap * 100).toFixed(1)}%`;
+    vsElement.className = `num ${gap <= 0 ? "good" : "bad"}`;
+    vsElement.title = `同期每日收盘均价 $${fmt(market, 0)}，你的美元成本均价 $${fmt(mine, 0)}`;
+  } else {
+    vsElement.textContent = "—";
+    vsElement.className = "num flat";
+    vsElement.title = "需要历史行情";
+  }
+
+  const worst = underwater();
+  const drawElement = $("#pDraw");
+  if (worst && Number.isFinite(worst.ratio)) {
+    drawElement.textContent = worst.ratio < 0 ? pct(worst.ratio) : "从未浮亏";
+    drawElement.className = `num ${worst.ratio < 0 ? "bad" : "good"}`;
+    drawElement.title = worst.ratio < 0 ? `出现在 ${worst.day}` : "账面始终高于成本";
+  } else {
+    drawElement.textContent = "—";
+    drawElement.className = "num flat";
+  }
+
+  const held = summary.btc;
+  const next = GOALS.find((goal) => goal > held + 1e-9) || Math.ceil(held + 0.5);
+  const previous = [...GOALS].reverse().find((goal) => goal <= held) || 0;
+  const gapBtc = next - held;
+  const money = Number.isFinite(price.v) ? (isCny ? price.v * state.settings.fx : price.v) * gapBtc : NaN;
+  $("#goalText").innerHTML = `₿${next} · 还差 ₿${btcText(gapBtc, 4)}${Number.isFinite(money) ? ` ≈ ${unit}${fmtK(money)}` : ""}`;
+  $("#goalBar").style.width = `${Math.max(2, Math.min(100, ((held - previous) / (next - previous)) * 100)).toFixed(1)}%`;
+  const perMonth = summary.btc > 0 ? summary.btc / months : 0;
+  const goalLabel = $("#goalLabel");
+  goalLabel.textContent = perMonth > 0
+    ? `按当前节奏约 ${Math.max(1, Math.round(gapBtc / perMonth))} 个月后到达`
+    : "下一个积累目标";
+  goalLabel.title = perMonth > 0 ? `过去平均每月积累 ₿${btcText(perMonth, 6)}` : "";
+
+  renderCal(summary);
+}
+
+function renderCal(summary) {
+  const box = $("#calBox");
+  const months = {};
+  summary.list.forEach((record) => {
+    if (record.cny > 0) months[record.date.slice(0, 7)] = (months[record.date.slice(0, 7)] || 0) + record.cny;
+  });
+  const keys = Object.keys(months);
+  if (keys.length < 2) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const max = Math.max(...Object.values(months));
+  const firstYear = +keys.sort()[0].slice(0, 4);
+  const nowMonth = today().slice(0, 7);
+  const lastYear = +nowMonth.slice(0, 4);
+  let html = "";
+  for (let year = lastYear; year >= firstYear; year -= 1) {
+    let cells = `<span class="yl">${String(year).slice(2)}</span>`;
+    for (let month = 1; month <= 12; month += 1) {
+      const key = `${year}-${String(month).padStart(2, "0")}`;
+      const amount = months[key] || 0;
+      const strength = amount > 0 ? 0.24 + 0.76 * Math.sqrt(amount / max) : 1;
+      cells += `<span class="cal-cell${amount > 0 ? " on" : ""}${key === nowMonth ? " now" : ""}" style="opacity:${strength.toFixed(2)}" title="${key} · ${amount > 0 ? cny(amount) : "未投入"}"></span>`;
+    }
+    html += `<div class="cal-row">${cells}</div>`;
+  }
+  html += `<div class="cal-months"><span></span>${Array.from({ length: 12 }, (_, index) => `<span>${index + 1}</span>`).join("")}</div>`;
+  $("#calGrid").innerHTML = html;
+  const span = (dateMs(nowMonth + "-01") - dateMs(keys[0] + "-01")) / DAY / 30.44;
+  $("#calStat").textContent = `${keys.length} / ${Math.max(keys.length, Math.round(span) + 1)} 个月有投入`;
 }
 
 /* ── 图表 ── */
@@ -1125,6 +1348,66 @@ function drawChart(summary) {
     $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--btc-vivid")}"></s>累计 ₿${btcText(summary.btc)}</span><span class="lg">${sats(summary.btc)} sats</span><span class="lg">${summary.buys.length} 笔买入</span>`;
     $("#chartNote").textContent = `约 ${months.toFixed(1)} 个月，平均每月积累 ₿${btcText(summary.btc / months, 6)}。数量曲线只由你的买入行为决定。`;
     canvas.setAttribute("aria-label", `累计持有 ${btcText(summary.btc)} BTC，共 ${summary.buys.length} 笔买入`);
+  } else if (chartTab === "cost" && daily && daily.length > 2) {
+    const fx = state.settings.fx;
+    const lastIndex = daily.length - 1;
+    const XD = (point, index) => index === lastIndex ? X(nowTime) : X(point.t);
+    const costOf = (point) => isCny ? point.costCny : point.costUsd;
+    const valueOf = (point) => (isCny ? point.px * fx : point.px) * point.btc;
+    const high = Math.max(...daily.map((point) => Math.max(costOf(point), valueOf(point))), 1) * 1.1;
+    const Y = (value) => y1 - (value / high) * (y1 - y0);
+    grid(0, high, (value) => `${unit}${fmtK(value)}`);
+
+    const currentValue = valueOf(daily[lastIndex]);
+    const currentCost = costOf(daily[lastIndex]);
+    const trendColor = currentValue >= currentCost ? color("--up") : color("--down");
+    const gradient = ctx.createLinearGradient(0, y0, 0, y1);
+    gradient.addColorStop(0, `${trendColor}30`);
+    gradient.addColorStop(1, `${trendColor}02`);
+    ctx.beginPath();
+    ctx.moveTo(XD(daily[0], 0), y1);
+    daily.forEach((point, index) => ctx.lineTo(XD(point, index), Y(valueOf(point))));
+    ctx.lineTo(X(nowTime), y1);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.beginPath();
+    daily.forEach((point, index) => index ? ctx.lineTo(XD(point, index), Y(costOf(point))) : ctx.moveTo(XD(point, index), Y(costOf(point))));
+    ctx.strokeStyle = color("--dim");
+    ctx.lineWidth = 1.3;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    daily.forEach((point, index) => index ? ctx.lineTo(XD(point, index), Y(valueOf(point))) : ctx.moveTo(XD(point, index), Y(valueOf(point))));
+    ctx.strokeStyle = trendColor;
+    ctx.lineWidth = 2.1;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(X(nowTime), Y(currentValue), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = trendColor;
+    ctx.fill();
+
+    marks = daily.map((point, index) => {
+      const value = valueOf(point);
+      const cost = costOf(point);
+      return {
+        x: XD(point, index), y: Y(value), t: point.t, v: value,
+        title: index === lastIndex ? "现在" : point.day,
+        lines: [["市值", `${unit}${fmtK(value)}`], ["成本", `${unit}${fmtK(cost)}`], ["盈亏", cost > 0 ? pct(value / cost - 1) : "—"], ["BTC", `$${fmt(point.px, 0)}`]],
+      };
+    });
+    drawXAxis();
+
+    const worst = underwater();
+    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--dim")}"></s>BTC 成本</span><span class="lg"><s style="background:${trendColor}"></s>持仓估值</span><span class="lg">${daily.length} 天逐日复原</span>`;
+    $("#chartNote").textContent = worst && worst.ratio < -0.01
+      ? `按每日收盘价复原：这条曲线最深一次浮亏出现在 ${worst.day}，当时账面 ${pct(worst.ratio)}，现在 ${pct(currentValue / currentCost - 1)}。`
+      : "按每日收盘价复原持仓估值，成本线只在买入日抬升。稳定币余额不计入这张 BTC 图。";
+    canvas.setAttribute("aria-label", `BTC 成本 ${unit}${fmtK(currentCost)}，当前市值 ${unit}${fmtK(currentValue)}`);
   } else if (chartTab === "cost") {
     let cumulativeBtc = positive(state.settings.baselineBtc);
     let cumulativeCost = positive(state.settings.baselineCny);
@@ -1197,7 +1480,10 @@ function drawChart(summary) {
     const effective = summary.buys.map((record) => isCny ? record.effectiveCny : record.effectiveUsd).filter(Number.isFinite);
     const current = isCny ? summary.px * state.settings.fx : summary.px;
     const average = isCny ? summary.costCny : summary.costUsd;
-    const all = effective.concat([current, average]);
+    const priceLine = daily && daily.length > 2
+      ? daily.map((point, index) => [index === daily.length - 1 ? nowTime : point.t, isCny ? point.px * state.settings.fx : point.px])
+      : null;
+    const all = effective.concat([current, average], priceLine ? priceLine.map((point) => point[1]) : []);
     const minRaw = Math.min(...all);
     const maxRaw = Math.max(...all);
     const padding = Math.max((maxRaw - minRaw) * 0.12, maxRaw * 0.035, 1);
@@ -1206,6 +1492,16 @@ function drawChart(summary) {
     const Y = (point) => y1 - ((point - low) / (high - low || 1)) * (y1 - y0);
     grid(low, high, (point) => `${unit}${fmtK(point)}`);
     const maxAmount = Math.max(...summary.buys.map((record) => record.allocatedCny || record.spent), 1);
+    if (priceLine) {
+      ctx.beginPath();
+      priceLine.forEach((point, index) => index ? ctx.lineTo(X(point[0]), Y(point[1])) : ctx.moveTo(X(point[0]), Y(point[1])));
+      ctx.strokeStyle = color("--faint");
+      ctx.globalAlpha = 0.42;
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     ctx.beginPath();
     ctx.moveTo(x0, Y(average));
     ctx.lineTo(x1, Y(average));
@@ -1238,7 +1534,7 @@ function drawChart(summary) {
     });
     drawXAxis();
     const below = effective.filter((point) => point <= average).length;
-    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--btc-vivid")}"></s>单笔买入（面积＝成本）</span><span class="lg"><s style="background:${color("--btc-vivid")};opacity:.55"></s>持仓均价 ${unit}${fmtK(average)}</span><span class="lg"><s style="background:${currentColor}"></s>当前价</span>`;
+    $("#legend").innerHTML = `<span class="lg"><s style="background:${color("--btc-vivid")}"></s>单笔买入（面积＝成本）</span><span class="lg"><s style="background:${color("--btc-vivid")};opacity:.55"></s>持仓均价 ${unit}${fmtK(average)}</span><span class="lg"><s style="background:${currentColor}"></s>当前价</span>${priceLine ? `<span class="lg"><s style="background:${color("--faint")};opacity:.45"></s>BTC 走势</span>` : ""}`;
     $("#chartNote").textContent = `${below}/${summary.buys.length} 笔低于当前综合均价；人民币视图使用每笔实际分摊成本，不再用当前汇率倒推历史成本。`;
     canvas.setAttribute("aria-label", `${summary.buys.length} 笔 BTC 买入成本分布，综合均价 ${unit}${fmtK(average)}`);
   }
@@ -1373,6 +1669,101 @@ async function firstValid(sources, validator, timeout) {
   } catch (_) {
     return null;
   }
+}
+
+/* ── 每日历史价格：让曲线跟着真实行情走，而不是只在买入点采样 ── */
+const HKEY = "btc-dca-daily-px";
+const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
+const dayUTC = (dateText) => Date.parse(`${dateText}T00:00:00Z`);
+
+async function klineHistory(startMs) {
+  const hosts = ["https://api.binance.com", "https://data-api.binance.vision"];
+  for (const host of hosts) {
+    const out = [];
+    let cursor = startMs;
+    for (let page = 0; page < 4; page += 1) {
+      const data = await grab(`${host}/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=${cursor}&limit=1000`, 7000);
+      if (!Array.isArray(data) || !data.length) break;
+      data.forEach((row) => out.push([isoDay(row[0]), +row[4]]));
+      if (data.length < 1000) break;
+      cursor = data[data.length - 1][0] + DAY;
+    }
+    if (out.length > 5) return out;
+  }
+  return null;
+}
+
+async function geckoHistory(startMs) {
+  const days = Math.min(3650, Math.max(30, Math.ceil((Date.now() - startMs) / DAY) + 3));
+  const data = await grab(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`, 8000);
+  const prices = data?.prices;
+  if (!Array.isArray(prices) || prices.length < 5) return null;
+  const byDay = new Map();
+  prices.forEach(([ms, value]) => { if (Number.isFinite(value)) byDay.set(isoDay(ms), value); });
+  return [...byDay.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+function useHistory(rows) {
+  if (!Array.isArray(rows) || !rows.length) return false;
+  histMap = new Map();
+  rows.forEach(([day, close]) => { if (Number.isFinite(close) && close > 0) histMap.set(day, close); });
+  histCount = histMap.size;
+  return histCount > 5;
+}
+
+let fetchingHistory = false;
+async function fetchHistory() {
+  if (fetchingHistory) return;
+  const summary = calc();
+  if (!summary.buys.length && !(state.settings.baselineBtc > 0)) return;
+  const needFrom = dayUTC(chartStart(summary)) - DAY * 2;
+  const cached = await store.get(HKEY);
+  const cacheFresh = cached && Array.isArray(cached.data) && cached.data.length > 5
+    && cached.from <= needFrom + DAY * 2 && cached.updated === today();
+  if (cacheFresh) {
+    if (useHistory(cached.data)) render();
+    return;
+  }
+  fetchingHistory = true;
+  const rows = (await klineHistory(needFrom)) || (await geckoHistory(needFrom));
+  fetchingHistory = false;
+  if (rows && useHistory(rows)) {
+    await store.set(HKEY, { updated: today(), from: needFrom, data: rows });
+    render();
+  } else if (cached && useHistory(cached.data)) {
+    render();
+  }
+}
+
+/* 逐日推进持仓、成本与市值，供曲线、回撤与均价对比复用 */
+function buildDaily(summary) {
+  if (!histMap || histCount < 5) return null;
+  const startDay = dayUTC(chartStart(summary));
+  const endDay = dayUTC(today());
+  if (!Number.isFinite(startDay) || endDay < startDay) return null;
+  const buysByDate = {};
+  summary.buys.forEach((record) => ((buysByDate[record.date] ||= []).push(record)));
+  const firstBuyDay = summary.buys.length ? dayUTC(summary.buys[0].date) : Infinity;
+  let btc = positive(state.settings.baselineBtc);
+  let costCny = positive(state.settings.baselineCny);
+  let costUsd = state.settings.fx > 0 ? costCny / state.settings.fx : 0;
+  let last = null;
+  const out = [];
+  for (let time = startDay; time <= endDay; time += DAY) {
+    const day = isoDay(time);
+    (buysByDate[day] || []).forEach((record) => {
+      btc += record.btc;
+      costCny += record.allocatedCny;
+      costUsd += record.spent;
+    });
+    const close = histMap.get(day);
+    if (Number.isFinite(close)) last = close;
+    if (!Number.isFinite(last)) continue;
+    out.push({ t: time, day, btc, costCny, costUsd, px: last, held: time >= firstBuyDay || positive(state.settings.baselineBtc) > 0 });
+  }
+  if (!out.length) return null;
+  if (Number.isFinite(price.v) && price.v > 0) out[out.length - 1].px = price.v;
+  return out;
 }
 
 let fetchingPrice = false;
@@ -1547,7 +1938,7 @@ function markAutoFields() {
 }
 
 function refreshAvailable() {
-  const summary = calc();
+  const summary = calc(editingId ? state.records.filter((record) => record.id !== editingId) : state.records);
   let available = summary.inventory[stableAsset].qty;
   if (entryMode === "full") available += positive(F.received.value);
   $("#fAvail").textContent = `账本余额 ${fmt(available, 2)} ${stableAsset}`;
@@ -1610,7 +2001,7 @@ function openForm(record) {
   const previous = state.records[state.records.length - 1];
   F.date.value = record?.date || today();
   F.cny.value = record?.cny ? record.cny : previous?.cny || "";
-  F.rate.value = record?.rate ? record.rate.toFixed(4) : previous?.rate || state.settings.fx;
+  F.rate.value = (record?.rate || previous?.rate || state.settings.fx || 0).toFixed(4);
   F.received.value = record?.usdt ? record.usdt.toFixed(2) : "";
   F.spent.value = record?.spent ? record.spent.toFixed(2) : "";
   F.quote.value = record?.price ? record.price.toFixed(2) : price.v ? price.v.toFixed(2) : "";
@@ -1690,6 +2081,7 @@ $("#form").addEventListener("submit", async (event) => {
   await persist();
   closeForm();
   render();
+  fetchHistory();
   toast(wasEditing ? "已更新记录" : btc > 0 ? `已记 ₿${btcText(btc, 6)}` : `已存入 ${fmt(received, 2)} ${stableAsset}`);
 });
 
@@ -1800,6 +2192,7 @@ $("#setClose").addEventListener("click", async () => {
   state.settings.manualPx = manualPx || null;
   closeModal($("#mSettings"));
   await persist();
+  fetchHistory();
   await Promise.all([fetchFx(), fetchPrice()]);
 });
 
@@ -1857,6 +2250,7 @@ async function applyImport(object, label) {
   await persist();
   closeModal($("#mData"));
   render();
+  fetchHistory();
   toast(`${label}${state.records.length} 笔`, "撤销", async () => {
     state = backup;
     applyTheme(state.settings.theme);
@@ -2009,6 +2403,7 @@ function installInlineIcon() {
   paintTick();
   render();
   installInlineIcon();
+  fetchHistory();
   await Promise.all([fetchFx(), fetchPrice()]);
   setInterval(fetchPrice, 60000);
   setInterval(fetchFx, 1800000);
