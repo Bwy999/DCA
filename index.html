@@ -232,7 +232,7 @@ footer span{font-size:11.5px;color:var(--faint)}
   .chartbox{padding:14px 12px 16px}
   .ledger{padding:18px 16px 6px}
 }
-/* ── 2026 精修：暖灰画布、黑金主卡、原生底部表单 ── */
+/* ── 2026 精修：暖灰画布、统一纸面、原生底部表单 ── */
 :root{
   --bg:#F4F2ED; --panel:#FFFFFF; --fill:#F1EFEA; --fill2:#E8E5DE;
   --line:#E5E1D8; --line-soft:#F0EDE7;
@@ -273,37 +273,82 @@ header{background:var(--header)}
 .brand-copy small{font-size:10px;color:var(--faint);margin-top:4px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 .iconbtn{width:38px;height:38px;border-radius:12px}
 
+/* ══ 持仓主卡 · 与其余卡片同一张纸，层级靠字号与留白 ══ */
 .hero{padding-top:16px}
 .hold{
   position:relative;isolation:isolate;overflow:hidden;
-  padding:28px 26px 24px;border:none;
+  padding:26px 24px 0;
   background:
-    radial-gradient(520px 240px at 95% -15%,rgba(247,147,30,.27),transparent 62%),
-    linear-gradient(155deg,#1A1B1C 0%,#101112 100%);
-  color:#F8F6F1;box-shadow:0 24px 70px rgba(22,19,14,.16),inset 0 1px 0 rgba(255,255,255,.06);
+    radial-gradient(440px 210px at 94% -34%,rgba(247,147,30,.085),transparent 64%),
+    var(--panel);
+  box-shadow:0 1px 1px rgba(35,29,20,.04),0 18px 46px rgba(35,29,20,.075);
 }
-html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%,rgba(247,147,30,.22),transparent 62%),linear-gradient(155deg,#1B1C1D,#111213);border-color:rgba(255,255,255,.06)}
-.hold::after{content:"₿";position:absolute;right:-25px;top:5px;z-index:-1;font-family:var(--mono);font-size:210px;font-weight:800;line-height:1;color:rgba(255,255,255,.022);transform:rotate(8deg);pointer-events:none}
-.hold .lbl{color:rgba(255,255,255,.52)}
-.hold-head{align-items:flex-start}
-.hero-kicker{display:flex;flex-direction:column;gap:5px}
-.hero-kicker .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.hero-kicker small{font-size:12px;color:rgba(255,255,255,.42)}
-.seg.hero-base{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.06)}
-.seg.hero-base button{color:rgba(255,255,255,.55)}
-.seg.hero-base button[aria-pressed="true"]{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
-.hold-btc{color:#fff;font-size:clamp(42px,12.5vw,64px);margin-top:24px;letter-spacing:-.055em}
-.hold-fiat{color:rgba(255,255,255,.52);margin-top:13px}
-.hold-fiat span{color:rgba(255,255,255,.9)}
-.hold-row{grid-template-columns:repeat(4,1fr);gap:0;margin-top:28px;padding:16px 0 1px;border-top:1px solid rgba(255,255,255,.09)}
-.hold-row>div{padding:0 14px;border-left:1px solid rgba(255,255,255,.08);min-width:0}
+html[data-theme="dark"] .hold{
+  background:
+    radial-gradient(440px 210px at 94% -34%,rgba(247,147,30,.10),transparent 64%),
+    var(--panel);
+  box-shadow:0 1px 0 rgba(255,255,255,.04),0 20px 52px rgba(0,0,0,.24);
+}
+.hold .lbl{color:var(--dim)}
+.hold-head{align-items:center;gap:14px}
+.hero-kicker{display:flex;flex-direction:column;gap:6px}
+.hero-kicker .lbl{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.hero-kicker small{font-size:12px;color:var(--faint);letter-spacing:-.01em}
+.seg.hero-base{background:var(--fill);padding:2px;border-radius:10px}
+.seg.hero-base button{font-size:11.5px;font-weight:500;padding:6px 11px;border-radius:8px;color:var(--dim)}
+.seg.hero-base button[aria-pressed="true"]{background:var(--panel);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.09)}
+html[data-theme="dark"] .seg.hero-base button[aria-pressed="true"]{background:var(--fill2);box-shadow:none}
+
+/* 主数字：₿ 缩小压暗，后四位降为浅灰 —— 一眼读到有效位，精度仍在 */
+.hold-btc{
+  display:flex;align-items:baseline;gap:0;
+  margin-top:22px;line-height:1;color:var(--text);
+  font-size:clamp(34px,10vw,56px);letter-spacing:-.052em;
+  white-space:nowrap;word-break:normal;
+}
+.hold-btc .sym{font-size:.5em;font-weight:600;letter-spacing:0;color:var(--faint);margin-right:.11em}
+.hold-btc .tail{color:var(--faint)}
+
+.hold-fiat{
+  display:flex;align-items:center;flex-wrap:wrap;gap:7px;
+  margin-top:15px;font-size:13px;color:var(--dim);
+}
+.hold-fiat span{font-size:14px;color:var(--text)}
+.hold-fiat .sep{font-style:normal;color:var(--faint)}
+.hold-fiat .pill{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  color:var(--dim);background:var(--fill);
+  padding:4px 9px 5px;border-radius:99px;
+}
+
+/* 四格：十字发丝线，与「定投表现」同一套分格语言 */
+.hold-row{grid-template-columns:repeat(4,1fr);gap:0;margin-top:24px;padding:0;border-top:0}
+.hold-row>div{padding:16px 14px;min-width:0;border-top:1px solid var(--line-soft);border-left:1px solid var(--line-soft)}
 .hold-row>div:first-child{padding-left:0;border-left:0}
 .hold-row>div:last-child{padding-right:0}
-.hold-row b{font-size:15px;margin-top:6px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hold-row .up{color:#FF766E}.hold-row .down{color:#45D68F}
-.hold-tick{margin-top:20px;padding-top:16px;border-color:rgba(255,255,255,.09)}
-.ht-l .lbl{margin-bottom:5px}.ht-l b{font-size:19px;color:#fff}.ht-r>span:first-child{font-size:12px}
-.status{color:rgba(255,255,255,.42)}
+.hold-row .lbl{font-size:11px;letter-spacing:-.005em}
+.hold-row b{font-size:16px;margin-top:9px;letter-spacing:-.042em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hold-row .up{color:var(--up)}
+.hold-row .down{color:var(--down)}
+
+/* 行情条：卡片底部的浅色仪表带，左右两列上下对齐 */
+.hold-tick{
+  display:flex;align-items:stretch;gap:14px;
+  margin:24px -24px 0;padding:15px 24px 20px;
+  border-top:1px solid var(--line-soft);
+  background:var(--fill);
+}
+.ht-l{flex:1;min-width:0;align-content:flex-start;row-gap:0}
+.ht-l .lbl{font-size:11px;line-height:1;margin-bottom:11px}
+.ht-l b{font-size:20px;line-height:1;letter-spacing:-.042em;color:var(--text)}
+.ht-l i{font-size:12px;line-height:1}
+.ht-r{justify-content:space-between;align-items:flex-end;gap:11px}
+.ht-r>span:first-child{order:2;font-size:12.5px;line-height:1}
+.ht-r .status{order:1;line-height:1}
+.status{color:var(--faint)}
+.hold .dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--down) 15%,transparent)}
+.hold .dot.stale{background:var(--faint);box-shadow:none}
 
 .toolbar{margin:18px 2px 14px}
 .actionbar{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:8px 9px 8px 14px;box-shadow:0 8px 28px rgba(35,29,20,.04)}
@@ -367,12 +412,15 @@ html[data-theme="dark"] .hold{background:radial-gradient(520px 240px at 95% -15%
 @media(max-width:680px){
   .wrap{padding:0 14px}
   .brand-copy small{display:none}
-  .hold{padding:24px 20px 21px;border-radius:22px}
-  .hold::after{font-size:170px;right:-38px;top:28px}
-  .hold-row{grid-template-columns:1fr 1fr;row-gap:17px}
-  .hold-row>div{border-left:0;padding:0}
-  .hold-row>div:nth-child(even){padding-left:15px;border-left:1px solid rgba(255,255,255,.08)}
-  .hold-row b{font-size:15px}
+  .hold{padding:22px 18px 0}
+  .hold-btc{margin-top:20px;font-size:clamp(32px,10.2vw,54px)}
+  .hold-row{grid-template-columns:1fr 1fr;row-gap:0}
+  .hold-row>div{padding:14px 0 14px 16px;border-left:1px solid var(--line-soft)}
+  .hold-row>div:nth-child(odd){padding-left:0;border-left:0}
+  .hold-row>div:nth-child(even){padding-left:16px;border-left:1px solid var(--line-soft)}
+  .hold-row b{font-size:16px}
+  .hold-tick{margin:20px -18px 0;padding:14px 18px 17px}
+  .ht-l b{font-size:19px}
   .actionbar{margin-top:14px;gap:7px;padding-left:12px}
   .actionbar .cadence{font-size:11.5px;white-space:nowrap}
   .cadence .gap{display:none}
@@ -938,10 +986,14 @@ function render() {
   document.documentElement.style.setProperty("--up", state.settings.redUp ? red : green);
   document.documentElement.style.setProperty("--down", state.settings.redUp ? green : red);
 
-  $("#holdBtc").textContent = `₿${btcText(summary.btc)}`;
+  const btcStr = btcText(summary.btc);
+  const dotAt = btcStr.indexOf(".");
+  const btcHead = dotAt < 0 ? btcStr : btcStr.slice(0, dotAt + 5);
+  const btcTail = dotAt < 0 ? "" : btcStr.slice(dotAt + 5);
+  $("#holdBtc").innerHTML = `<span class="sym">₿</span>${btcHead}${btcTail ? `<span class="tail">${btcTail}</span>` : ""}`;
   $("#holdFiat").innerHTML = summary.btc > 0
     ? Number.isFinite(summary.valUsd)
-      ? `<span>${usd(summary.valUsd)}</span> · <span>${cny(summary.valCny)}</span>${summary.stableQty > 0 ? ` &nbsp;另有 <span>${fmt(summary.stableQty, 2)}</span> 稳定币` : ""}`
+      ? `<span>${usd(summary.valUsd)}</span><em class="sep">/</em><span>${cny(summary.valCny)}</span>${summary.stableQty > 0 ? `<b class="pill">+${fmt(summary.stableQty, 2)} 稳定币</b>` : ""}`
       : `<span>${sats(summary.btc)}</span> sats · 等待行情`
     : "还没有 BTC 持仓";
 
