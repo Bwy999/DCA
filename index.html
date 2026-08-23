@@ -487,6 +487,31 @@ html[data-theme="dark"] .seg.hero-base button[aria-pressed="true"]{background:va
   .cal-row,.cal-months{grid-template-columns:26px repeat(12,1fr);gap:3px}
   .cal-cell{border-radius:3px}
 }
+/* ══ 设置弹层修正 ══ */
+/* 1) 日期框撑破灰底：grid 项默认 min-width:auto，而 iOS 的日期控件固有宽度很大 */
+.baseline-grid{min-width:0}
+.baseline-grid label{display:block;min-width:0}
+.baseline-grid input{min-width:0;max-width:100%}
+.baseline-grid input[type="date"]{
+  -webkit-appearance:none;appearance:none;
+  font-family:var(--sans);font-size:14px;letter-spacing:-.01em;
+  height:42px;line-height:1.2;text-align:left;
+}
+.baseline-grid input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0;padding:0}
+.baseline-grid input[type="date"]::-webkit-calendar-picker-indicator{opacity:.35;margin-left:auto}
+
+/* 2) 汇率 / BTC 价格：118px 装不下「自动 · 数值」，尾部被切掉 */
+.srow{gap:12px}
+.srow .k{flex:1;min-width:0}
+.srow input{width:142px;flex:none;font-size:14px}
+
+/* 3) 分隔线：原写法用 :last-of-type，命中的其实是 .factions，末行因此多一条线 */
+.sheet .srow{border-bottom:0;border-top:1px solid var(--line-soft)}
+.sheet .baseline-box + .srow{border-top:0}
+
+/* 4) 吸底操作条只服务于录入长表单，不该套在设置 / 备份弹层上 */
+.sheet .factions{position:static;background:none;padding-top:0;padding-bottom:0;margin-top:20px}
+
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1903,7 +1928,7 @@ function paintTick() {
   $("#pxsrc").textContent = source;
   $("#dot").className = `dot${price.live ? "" : " stale"}`;
   $("#setPxSrc").textContent = state.settings.manualPx > 0 ? "手动设定，清空则恢复自动" : price.live ? `自动行情 · ${price.src}` : "留空则自动获取";
-  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v, 0)}` : "自动";
+  $("#setPx").placeholder = price.v ? `自动 ${fmt(price.v, 0)}` : "自动";
   $("#setFxSrc").textContent = state.settings.manualFx > 0 ? "USD/CNY · 手动设定" : `USD/CNY · ${fxInfo.live ? fxInfo.src : fxInfo.src}`;
 }
 
@@ -2222,9 +2247,9 @@ $("#btnSettings").addEventListener("click", () => {
   $("#setBaseCny").value = state.settings.baselineCny || "";
   $("#setBaseDate").value = state.settings.baselineDate || "";
   $("#setFx").value = state.settings.manualFx || "";
-  $("#setFx").placeholder = `自动 · ${state.settings.fx}`;
+  $("#setFx").placeholder = `自动 ${state.settings.fx}`;
   $("#setPx").value = state.settings.manualPx || "";
-  $("#setPx").placeholder = price.v ? `自动 · ${fmt(price.v, 0)}` : "自动";
+  $("#setPx").placeholder = price.v ? `自动 ${fmt(price.v, 0)}` : "自动";
   setPressed(state.settings.redUp ? $("#cnRed") : $("#cnGreen"), [$("#cnRed"), $("#cnGreen")]);
   openModal($("#mSettings"));
 });
